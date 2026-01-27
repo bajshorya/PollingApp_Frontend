@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const API_BASE = "http://localhost:8080";
 
-/* ---------------- utils ---------------- */
 
 function base64UrlToUint8Array(base64Url: string) {
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");

@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function Home() {
@@ -20,7 +19,7 @@ export default function Home() {
             <span className="noto-sans-light">Aesthetically</span>
           </h1>
           <Link
-            href="/livePolls"
+            href="/polls"
             className="mt-10 inline-block pointer-events-auto"
           >
             <div className="xanh-mono-regular font-bold border-2 p-3 rounded-2xl hover:cursor-pointer hover:transform transition-all hover:scale-105 hover:bg-white/10">

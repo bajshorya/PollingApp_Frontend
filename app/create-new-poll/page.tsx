@@ -102,7 +102,6 @@ const CreateNewPoll = () => {
   if (success && createdPoll) {
     return (
       <div className="min-h-screen bg-[#175588] relative overflow-hidden flex items-center justify-center p-6">
-        {/* Animated background gradient orbs */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-400/20 rounded-full blur-3xl animate-pulse" />
         <div
           className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl animate-pulse"
@@ -111,7 +110,6 @@ const CreateNewPoll = () => {
 
         <div className="w-full max-w-2xl relative">
           <div className="bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-2xl transform hover:scale-[1.02] transition-all duration-500">
-            {/* Success icon with animation */}
             <div className="flex justify-center mb-6">
               <div className="w-20 h-20 bg-linear-to-br from-emerald-400 to-cyan-400 rounded-full flex items-center justify-center shadow-lg animate-bounce">
                 <svg
@@ -132,7 +130,7 @@ const CreateNewPoll = () => {
 
             <div className="text-center mb-8">
               <div className="inline-block bg-linear-to-r from-emerald-400/20 to-cyan-400/20 text-emerald-300 px-6 py-2 rounded-full text-sm mb-4 border border-emerald-400/30 shadow-lg">
-                ✨ Poll Created Successfully
+                Poll Created Successfully
               </div>
               <h2 className="text-4xl font-bold bg-linear-to-r from-white to-cyan-200 bg-clip-text text-transparent mb-3">
                 {createdPoll.title}
@@ -187,7 +185,6 @@ const CreateNewPoll = () => {
 
   return (
     <div className="h-screen bg-[#175588] relative overflow-hidden flex items-center justify-center p-2">
-      {/* Animated background elements */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl animate-pulse" />
       <div
         className="absolute bottom-0 left-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl animate-pulse"
@@ -199,7 +196,6 @@ const CreateNewPoll = () => {
       />
 
       <div className="w-full max-w-2xl relative">
-        {/* Floating header */}
         <div className="mb-3 transform hover:scale-105 transition-all duration-300">
           <h1 className="text-3xl font-bold bg-linear-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent mb-1 drop-shadow-lg noto-sans-bold">
             Create Poll
@@ -211,7 +207,6 @@ const CreateNewPoll = () => {
 
         <div className="bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-2xl">
           <div className="space-y-3">
-            {/* Title input */}
             <div className="group">
               <label className="block text-white/80 text-xs mb-1 font-medium group-hover:text-cyan-300 transition-colors duration-200 noto-sans-semibold">
                 Title
@@ -234,7 +229,6 @@ const CreateNewPoll = () => {
               </div>
             </div>
 
-            {/* Description textarea */}
             <div className="group">
               <label className="block text-white/80 text-xs mb-1 font-medium group-hover:text-cyan-300 transition-colors duration-200 noto-sans-semibold">
                 Description
@@ -257,7 +251,6 @@ const CreateNewPoll = () => {
               </div>
             </div>
 
-            {/* Options */}
             <div className="group">
               <label className="block text-white/80 text-xs mb-2 font-medium group-hover:text-cyan-300 transition-colors duration-200 noto-sans-semibold">
                 Options
@@ -307,14 +300,12 @@ const CreateNewPoll = () => {
               </div>
             </div>
 
-            {/* Error message */}
             {error && (
               <div className="bg-linear-to-r from-red-500/20 to-pink-500/20 text-red-200 px-5 py-4 rounded-xl border-2 border-red-500/30 text-sm backdrop-blur-sm animate-pulse shadow-lg">
-                ⚠️ {error}
+                 {error}
               </div>
             )}
 
-            {/* Submit button */}
             <button
               onClick={handleSubmit}
               disabled={loading}

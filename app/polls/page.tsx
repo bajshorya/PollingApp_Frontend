@@ -108,7 +108,7 @@ const LivePolls = () => {
               {polls.map((poll, index) => (
                 <Link
                   key={poll.id}
-                  href={`/livePolls/${poll.id}`}
+                  href={`/polls/${poll.id}`}
                   className="group relative bg-white/[0.07] backdrop-blur-md rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all duration-300 hover:-translate-y-1 animate-fade-in cursor-pointer h-44 flex flex-col"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >

@@ -23,7 +23,6 @@ export default function SigninPage() {
       const res = await signinWithPasskey(username);
       setStatus(`✅ ${res.message}`);
 
-      // Redirect to home page after 1 second
       setTimeout(() => {
         router.push("/");
       }, 1000);

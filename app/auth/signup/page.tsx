@@ -24,7 +24,6 @@ export default function SignupPage() {
       const res = await signupWithPasskey(username);
       setStatus(`✅ ${res.message}`);
 
-      // Redirect to signin page after 1 second
       setTimeout(() => {
         router.push("/auth/signin");
       }, 1000);
