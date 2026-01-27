@@ -24,7 +24,7 @@ export default function SigninPage() {
       setStatus(`✅ ${res.message}`);
 
       setTimeout(() => {
-        router.push("/");
+        router.push("/polls");
       }, 1000);
     } catch (e: any) {
       setStatus(e.message);
