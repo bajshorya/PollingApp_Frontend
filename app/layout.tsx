@@ -7,6 +7,7 @@ import {
   Noto_Sans,
 } from "next/font/google";
 import "./globals.css";
+import { NavbarDemo } from "@/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,8 +50,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} ${xanhMono.variable} ${inriaSerif.variable} ${notoSans.variable} antialiased bg-[#175588] `}
       >
+        <NavbarDemo />
         {children}
       </body>
     </html>

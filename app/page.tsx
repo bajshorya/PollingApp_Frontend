@@ -12,7 +12,7 @@ export default function Home() {
           backgroundAttachment: "fixed",
         }}
       />
-      <div className="absolute z-50 inset-0 flex items-center justify-center text-white font-bold px-4 pointer-events-none  text-center ">
+      <div className="absolute z-50 inset-0 flex items-center justify-center text-white font-bold p-5 pointer-events-none  text-center ">
         <span>
           <h1 className="text-4xl md:text-4xl lg:text-7xl">
             <span className="xanh-mono-regular-italic ">Poll</span>
