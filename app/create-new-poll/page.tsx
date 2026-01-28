@@ -51,7 +51,6 @@ export default function CreateNewPollPage() {
           options: options.filter((opt) => opt.trim() !== ""),
         }),
       });
-      console.log("Response status:", response.status);
       if (response.status === 401) {
         setError("You need to be signed in to create a poll");
         return;
@@ -63,7 +62,6 @@ export default function CreateNewPollPage() {
       }
 
       const data = await response.json();
-      console.log("Poll created:", data);
       router.push(`/polls/${data.poll_id}`);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

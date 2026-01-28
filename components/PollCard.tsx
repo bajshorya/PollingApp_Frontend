@@ -22,7 +22,6 @@ export interface Poll {
 export const PollCard: React.FC<{ poll: Poll }> = ({ poll }) => {
   return (
     <div className="rounded-xl border border-white/10 bg-linear-to-br from-white/5 to-white/2 backdrop-blur-md p-6 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10">
-      {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
@@ -43,7 +42,6 @@ export const PollCard: React.FC<{ poll: Poll }> = ({ poll }) => {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-3 gap-2 mb-6 py-4 border-t border-b border-white/5">
         <div className="text-center">
           <div className="text-xl font-bold text-blue-400">
@@ -66,7 +64,6 @@ export const PollCard: React.FC<{ poll: Poll }> = ({ poll }) => {
         </div>
       </div>
 
-      {/* Options */}
       <div className="space-y-3 mb-6">
         {poll.options.map((option, index) => (
           <div key={index} className="space-y-1">
@@ -88,7 +85,6 @@ export const PollCard: React.FC<{ poll: Poll }> = ({ poll }) => {
         ))}
       </div>
 
-      {/* Action Button */}
       <Button className="w-full bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium transition-all">
         Vote Now
       </Button>

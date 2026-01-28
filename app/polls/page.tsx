@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { TrendingUp, LogIn } from "lucide-react";
-import PollGrid from "@/components/PollGrid";
+import { TrendingUp, LogIn, Wifi, WifiOff } from "lucide-react";
+import LivePollGrid from "@/components/LivePollGrid";
 import { cookies } from "next/headers";
 import Link from "next/link";
 
@@ -38,20 +38,26 @@ const getLivePolls = async (): Promise<Poll[] | null> => {
     });
 
     if (response.status === 401) {
-      // User is not authenticated
       return null;
     }
 
     if (!response.ok) {
       const text = await response.text();
       console.error("Backend /polls error:", text);
-      return null;
+      return [];
     }
 
-    return await response.json();
+    const polls: Poll[] = await response.json();
+
+    return polls.map((poll) => ({
+      ...poll,
+      options: poll.options || [],
+      total_votes:
+        poll.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0) || 0,
+    }));
   } catch (error) {
     console.error("Error fetching live polls:", error);
-    return null;
+    return [];
   }
 };
 
@@ -87,7 +93,7 @@ async function PollsFetcher() {
     return <UnauthenticatedMessage />;
   }
 
-  return <PollGrid polls={polls} />;
+  return <LivePollGrid initialPolls={polls} />;
 }
 
 const Loader = () => (
@@ -115,9 +121,14 @@ export default function LivePollsPage() {
               <h1 className="text-4xl text-white inria-serif-bold">
                 Live Polls
               </h1>
+              <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full text-sm text-green-300 flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                Real-time
+              </div>
             </div>
             <p className="text-white/50 text-sm noto-sans-light">
-              Browse and participate in polls
+              Browse and participate in polls. Updates happen in real-time as
+              users vote.
             </p>
           </div>
 

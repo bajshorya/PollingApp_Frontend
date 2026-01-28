@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */ "use client";
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -26,6 +26,7 @@ export default function SigninPage() {
       setTimeout(() => {
         router.push("/polls");
       }, 1000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setStatus(e.message);
     } finally {

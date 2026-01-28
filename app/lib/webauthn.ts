@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const API_BASE = "http://localhost:8080";
-
 
 function base64UrlToUint8Array(base64Url: string) {
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -17,7 +15,6 @@ function uint8ArrayToBase64Url(bytes: Uint8Array) {
     .replace(/\//g, "_")
     .replace(/=/g, "");
 }
-
 
 export async function signupWithPasskey(username: string) {
   const startRes = await fetch(`${API_BASE}/register_start/${username}`, {
@@ -82,6 +79,7 @@ export async function signinWithPasskey(username: string) {
 
   if (options.publicKey.allowCredentials) {
     options.publicKey.allowCredentials = options.publicKey.allowCredentials.map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (cred: any) => ({
         ...cred,
         id: base64UrlToUint8Array(cred.id),

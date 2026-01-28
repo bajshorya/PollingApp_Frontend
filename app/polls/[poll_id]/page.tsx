@@ -22,7 +22,6 @@ interface PollData {
   options: PollOption[];
   current_user_id?: string;
 }
-
 async function fetchPollData(poll_id: string): Promise<PollData | null> {
   try {
     const cookieStore = await cookies();
@@ -31,6 +30,9 @@ async function fetchPollData(poll_id: string): Promise<PollData | null> {
       .map((c) => `${c.name}=${c.value}`)
       .join("; ");
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); 
+
     const response = await fetch(`http://localhost:8080/polls/${poll_id}`, {
       method: "GET",
       headers: {
@@ -38,21 +40,28 @@ async function fetchPollData(poll_id: string): Promise<PollData | null> {
         Cookie: cookieHeader,
       },
       cache: "no-store",
+      signal: controller.signal, 
     });
 
+    clearTimeout(timeoutId); 
+
     if (response.status === 401) {
-      // User is not authenticated
       return null;
     }
 
     if (!response.ok) {
-      console.error(await response.text());
+      const errorText = await response.text();
+      console.error("Error fetching poll data:", errorText);
       return null;
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Error fetching poll data:", error);
+    if (error instanceof Error && error.name === "AbortError") {
+      console.error("Request timeout for poll:", poll_id);
+    } else {
+      console.error("Error fetching poll data:", error);
+    }
     return null;
   }
 }
