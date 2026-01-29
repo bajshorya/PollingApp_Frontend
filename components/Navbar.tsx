@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Menu, MenuItem, AuthButton } from "./ui/navbar-menu";
+import { AuthButton } from "./ui/navbar-menu";
 import { cn } from "@/lib/utils";
 
 export function NavbarDemo() {
@@ -13,7 +13,6 @@ export function NavbarDemo() {
 }
 
 function Navbar({ className }: { className?: string }) {
-  const [active, setActive] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -26,7 +25,7 @@ function Navbar({ className }: { className?: string }) {
         credentials: "include",
       });
       setIsLoggedIn(response.status !== 401);
-    } catch (error) {
+    } catch {
       setIsLoggedIn(false);
     } finally {
       setIsLoading(false);

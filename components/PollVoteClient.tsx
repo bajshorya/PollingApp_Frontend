@@ -247,7 +247,7 @@ export default function PollVoteClient({
                 <span className="xanh-mono-regular text-white/80 text-sm">
                   {option.votes.toLocaleString()} votes
                 </span>
-                <span className="px-2 py-1 bg-white/10 rounded text-xs text-white/90 min-w-[3rem] text-center">
+                <span className="px-2 py-1 bg-white/10 rounded text-xs text-white/90 min-w-12 text-center">
                   {percent}%
                 </span>
               </div>

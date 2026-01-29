@@ -58,7 +58,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
     return poll.options.reduce((sum, option) => sum + (option.votes || 0), 0);
   };
 
-
   useEffect(() => {
     console.log("🔗 Attempting to connect to SSE...");
 
@@ -92,6 +91,7 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
         try {
           const data = JSON.parse(event.data);
           console.log("📦 Parsed message data:", data);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {}
       };
 
@@ -333,7 +333,7 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
                     ? "border-cyan-400/50 bg-cyan-500/5 shadow-lg shadow-cyan-500/10"
                     : isLive
                       ? "border-green-400/20 bg-white/[0.07] hover:border-green-400/40"
-                      : "border-white/10 bg-white/[0.05] hover:border-white/20"
+                      : "border-white/10 bg-white/5 hover:border-white/20"
                 }`}
               style={{ animationDelay: `${index * 50}ms` }}
             >

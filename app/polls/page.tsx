@@ -1,5 +1,6 @@
+export const dynamic = "force-dynamic";
 import { Suspense } from "react";
-import { TrendingUp, LogIn, Wifi, WifiOff } from "lucide-react";
+import { TrendingUp, LogIn } from "lucide-react";
 import LivePollGrid from "@/components/LivePollGrid";
 import { cookies } from "next/headers";
 import Link from "next/link";
