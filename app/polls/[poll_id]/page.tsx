@@ -156,7 +156,7 @@ export default async function LivePollPage({
 
   return (
     <div className="min-h-screen bg-[#175588] relative overflow-hidden">
-      <div className="relative z-10 w-full pt-20 pb-12 px-4">
+      <div className="relative z-10 w-full pt-30 pb-12 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-2xl">
             <h1 className="text-5xl text-white mb-4 inria-serif-bold">
