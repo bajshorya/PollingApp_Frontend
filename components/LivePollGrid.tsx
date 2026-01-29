@@ -58,9 +58,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
     return poll.options.reduce((sum, option) => sum + (option.votes || 0), 0);
   };
 
-  // Replace the entire useEffect in LivePollGrid.tsx with this:
-
-  // Replace the entire useEffect in LivePollGrid.tsx with this:
 
   useEffect(() => {
     console.log("🔗 Attempting to connect to SSE...");
@@ -139,7 +136,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
         }
       });
 
-      // Handle poll_created events
       eventSource.addEventListener("poll_created", (event) => {
         console.log("🎉 Received poll_created event");
         try {
@@ -178,7 +174,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
         }
       });
 
-      // Handle poll_updated events (when votes change)
       eventSource.addEventListener("poll_updated", (event) => {
         console.log("🔄 Received poll_updated event");
         try {
@@ -216,7 +211,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
         }
       });
 
-      // Handle poll_closed events
       eventSource.addEventListener("poll_closed", (event) => {
         console.log("🔒 Received poll_closed event");
         try {

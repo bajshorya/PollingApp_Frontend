@@ -2,7 +2,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-interface Option {
+interface BackendOption {
+  id: string;
+  option_text: string;
+  poll_id: string;
+  votes: number;
+}
+
+interface FrontendOption {
   id: string;
   text: string;
   votes: number;
@@ -10,13 +17,13 @@ interface Option {
 
 interface Props {
   pollId: string;
-  options: Option[];
+  options: FrontendOption[];
   closed: boolean;
   userVoted: boolean;
 }
 
 interface SseUpdate {
-  options: Option[];
+  options: BackendOption[];
   total_votes: number;
   updated_option_id?: string;
 }
@@ -27,13 +34,23 @@ export default function PollVoteClient({
   closed: initialClosed,
   userVoted,
 }: Props) {
-  const [options, setOptions] = useState<Option[]>(initialOptions);
+  const [options, setOptions] = useState<FrontendOption[]>(initialOptions);
   const [voted, setVoted] = useState(userVoted);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [closed, setClosed] = useState(initialClosed);
   const [connectionStatus, setConnectionStatus] =
     useState<string>("disconnected");
+
+  const transformOptions = (
+    backendOptions: BackendOption[],
+  ): FrontendOption[] => {
+    return backendOptions.map((opt) => ({
+      id: opt.id,
+      text: opt.option_text || "",
+      votes: opt.votes || 0,
+    }));
+  };
 
   useEffect(() => {
     if (closed) {
@@ -65,7 +82,8 @@ export default function PollVoteClient({
         }
         if (data.options) {
           console.log("Setting initial options:", data.options);
-          setOptions(data.options);
+          const transformedOptions = transformOptions(data.options);
+          setOptions(transformedOptions);
         }
       } catch (err) {
         console.error("Error parsing init event:", err);
@@ -77,7 +95,8 @@ export default function PollVoteClient({
       try {
         const data: SseUpdate = JSON.parse(event.data);
         console.log("Updated options received:", data.options);
-        setOptions(data.options);
+        const transformedOptions = transformOptions(data.options);
+        setOptions(transformedOptions);
       } catch (err) {
         console.error("Error parsing vote_update:", err);
       }
@@ -116,6 +135,7 @@ export default function PollVoteClient({
       setConnectionStatus("disconnected");
     };
   }, [pollId, closed]);
+
   const castVote = useCallback(
     async (optionId: string) => {
       if (loading || voted || closed) return;
@@ -147,7 +167,6 @@ export default function PollVoteClient({
         setVoted(true);
         console.log("✅ Vote recorded successfully");
 
-        // Immediately update local state to reflect the vote
         setOptions((prevOptions) =>
           prevOptions.map((opt) =>
             opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt,
@@ -222,7 +241,7 @@ export default function PollVoteClient({
 
             <div className="relative flex justify-between items-center">
               <span className="text-white noto-sans-medium text-base">
-                {option.text}
+                {option.text || "Unnamed option"}
               </span>
               <div className="flex items-center gap-3">
                 <span className="xanh-mono-regular text-white/80 text-sm">

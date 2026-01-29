@@ -31,7 +31,7 @@ async function fetchPollData(poll_id: string): Promise<PollData | null> {
       .join("; ");
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); 
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     const response = await fetch(`http://localhost:8080/polls/${poll_id}`, {
       method: "GET",
@@ -40,10 +40,10 @@ async function fetchPollData(poll_id: string): Promise<PollData | null> {
         Cookie: cookieHeader,
       },
       cache: "no-store",
-      signal: controller.signal, 
+      signal: controller.signal,
     });
 
-    clearTimeout(timeoutId); 
+    clearTimeout(timeoutId);
 
     if (response.status === 401) {
       return null;
@@ -55,7 +55,20 @@ async function fetchPollData(poll_id: string): Promise<PollData | null> {
       return null;
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    const transformedData = {
+      ...data,
+      options:
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data.options?.map((opt: any) => ({
+          id: opt.id,
+          text: opt.option_text || opt.text || "", // Convert option_text to text
+          votes: opt.votes || 0,
+        })) || [],
+    };
+
+    return transformedData;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       console.error("Request timeout for poll:", poll_id);
@@ -152,16 +165,7 @@ export default async function LivePollPage({
             <p className="text-white/70 text-lg mb-6 noto-sans-regular">
               {pollData.description}
             </p>
-            <div className="mb-6 p-4 bg-white/5 rounded-lg border border-white/10 text-white text-sm">
-              <p>
-                <strong>Debug Info:</strong>
-              </p>
-              <p>Creator ID: {pollData.creator_id || "missing"}</p>
-              <p>Current User ID: {pollData.current_user_id ?? "not set"}</p>
-              <p>Is Creator: {isCreator ? "YES" : "NO"}</p>
-              <p>Poll Closed: {pollData.closed ? "YES" : "NO"}</p>
-              <p>User Voted: {pollData.user_voted ? "YES" : "NO"}</p>
-            </div>
+
             <div className="flex gap-4 text-white/50 text-sm mb-8">
               <span>Status:</span>
               <span
@@ -182,7 +186,7 @@ export default async function LivePollPage({
                   type="submit"
                   className="px-6 py-3 rounded-xl bg-red-500/20 text-red-300 border border-red-400/30 hover:bg-red-500/30 transition"
                 >
-                  🔒 Close Poll
+                  Close Poll
                 </button>
               </form>
             )}

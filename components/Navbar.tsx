@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Menu, MenuItem, AuthButton } from "./ui/navbar-menu";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,7 @@ function Navbar({ className }: { className?: string }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   const checkAuthStatus = async () => {
     try {
@@ -36,18 +37,16 @@ function Navbar({ className }: { className?: string }) {
     checkAuthStatus();
   }, []);
 
-  // Listen for auth state changes (e.g., after sign in/out)
   useEffect(() => {
-    const handleRouteChange = () => {
+    checkAuthStatus();
+  }, [pathname]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
       checkAuthStatus();
-    };
+    }, 5000);
 
-    // Check auth status when route changes
-    window.addEventListener("popstate", handleRouteChange);
-
-    return () => {
-      window.removeEventListener("popstate", handleRouteChange);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   if (isLoading) {
