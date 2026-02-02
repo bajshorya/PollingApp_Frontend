@@ -15,14 +15,17 @@ export async function createPoll(formData: {
       .map((c) => `${c.name}=${c.value}`)
       .join("; ");
 
-    const response = await fetch("http://localhost:8080/polls", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieHeader,
+    const response = await fetch(
+      `${process.env.BACKEND_PORT}/polls`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: cookieHeader,
+        },
+        body: JSON.stringify(formData),
       },
-      body: JSON.stringify(formData),
-    });
+    );
 
     if (response.status === 401) {
       return {

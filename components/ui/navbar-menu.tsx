@@ -126,26 +126,15 @@ export const AuthButton = ({
   setIsLoggedIn: (value: boolean) => void;
 }) => {
   const router = useRouter();
-
+  // ("`${process.env.BACKEND_PORT}`");
   const handleSignOut = async () => {
     try {
-      // Clear frontend cookies
       document.cookie = "webauthnrs=; max-age=0; path=/; domain=localhost;";
 
-      // Call backend logout endpoint (if you have one)
-      // If you don't have a logout endpoint, just clear the cookie
-      // await fetch("http://localhost:8080/logout", {
-      //   method: "POST",
-      //   credentials: "include",
-      // });
-
-      // Update state
       setIsLoggedIn(false);
 
-      // Redirect to signin page
       router.push("/auth/signin");
 
-      // Force a page refresh to update all components
       setTimeout(() => {
         router.refresh();
       }, 100);

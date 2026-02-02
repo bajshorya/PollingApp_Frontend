@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8080";
+const API_BASE = `${process.env.BACKEND_PORT}`;
 
 function base64UrlToUint8Array(base64Url: string) {
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");

@@ -33,15 +33,18 @@ async function fetchPollData(poll_id: string): Promise<PollData | null> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    const response = await fetch(`http://localhost:8080/polls/${poll_id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieHeader,
+    const response = await fetch(
+      `${process.env.BACKEND_PORT}/polls/${poll_id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: cookieHeader,
+        },
+        cache: "no-store",
+        signal: controller.signal,
       },
-      cache: "no-store",
-      signal: controller.signal,
-    });
+    );
 
     clearTimeout(timeoutId);
 
@@ -88,7 +91,7 @@ async function closePollAction(pollId: string) {
     .map((c) => `${c.name}=${c.value}`)
     .join("; ");
 
-  const res = await fetch(`http://localhost:8080/polls/${pollId}/close`, {
+  const res = await fetch(`${process.env.BACKEND_PORT}/polls/${pollId}/close`, {
     method: "POST",
     headers: {
       Cookie: cookieHeader,

@@ -61,7 +61,7 @@ export default function PollVoteClient({
     console.log("Starting SSE connection for poll:", pollId);
     setConnectionStatus("connecting");
 
-    const sseUrl = `http://localhost:8080/polls/${pollId}/sse`;
+    const sseUrl = `${process.env.BACKEND_PORT}/polls/${pollId}/sse`;
     console.log("Connecting to SSE URL:", sseUrl);
 
     const eventSource = new EventSource(sseUrl, {
@@ -145,14 +145,17 @@ export default function PollVoteClient({
       console.log("Casting vote for option:", optionId);
 
       try {
-        const res = await fetch(`http://localhost:8080/polls/${pollId}/vote`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        const res = await fetch(
+          `${process.env.BACKEND_PORT}/polls/${pollId}/vote`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ option_id: optionId }),
           },
-          credentials: "include",
-          body: JSON.stringify({ option_id: optionId }),
-        });
+        );
 
         console.log("Vote response status:", res.status);
 

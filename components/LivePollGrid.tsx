@@ -75,9 +75,12 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
         `🔗 SSE connection attempt ${reconnectAttempts + 1}/${maxReconnectAttempts}`,
       );
 
-      const eventSource = new EventSource("http://localhost:8080/polls/sse", {
-        withCredentials: true,
-      });
+      const eventSource = new EventSource(
+        `${process.env.BACKEND_PORT}/polls/sse`,
+        {
+          withCredentials: true,
+        },
+      );
 
       eventSource.onopen = () => {
         console.log("✅ SSE connection opened successfully");
