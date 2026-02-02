@@ -16,7 +16,7 @@ export async function createPoll(formData: {
       .join("; ");
 
     const response = await fetch(
-      `${process.env.BACKEND_PORT}/polls`,
+      `http://\${process.env.NEXT_PUBLIC_API_URL}/polls`,
       {
         method: "POST",
         headers: {
@@ -44,7 +44,6 @@ export async function createPoll(formData: {
 
     const data = await response.json();
 
-    // Revalidate the polls page
     revalidatePath("/polls");
 
     return {

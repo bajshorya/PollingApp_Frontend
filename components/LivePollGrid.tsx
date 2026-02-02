@@ -76,7 +76,7 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
       );
 
       const eventSource = new EventSource(
-        `${process.env.BACKEND_PORT}/polls/sse`,
+        `${process.env.NEXT_PUBLIC_API_URL}/polls/sse`,
         {
           withCredentials: true,
         },

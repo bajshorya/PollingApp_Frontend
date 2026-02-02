@@ -38,7 +38,7 @@ export default function CreateNewPollPage() {
     const cookieString = document.cookie;
 
     try {
-      const response = await fetch(`${process.env.BACKEND_PORT}/polls`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/polls`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -61,7 +61,7 @@ export default function PollVoteClient({
     console.log("Starting SSE connection for poll:", pollId);
     setConnectionStatus("connecting");
 
-    const sseUrl = `${process.env.BACKEND_PORT}/polls/${pollId}/sse`;
+    const sseUrl = `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/sse`;
     console.log("Connecting to SSE URL:", sseUrl);
 
     const eventSource = new EventSource(sseUrl, {
@@ -146,7 +146,7 @@ export default function PollVoteClient({
 
       try {
         const res = await fetch(
-          `${process.env.BACKEND_PORT}/polls/${pollId}/vote`,
+          `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/vote`,
           {
             method: "POST",
             headers: {

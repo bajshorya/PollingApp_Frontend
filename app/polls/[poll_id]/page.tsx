@@ -34,7 +34,7 @@ async function fetchPollData(poll_id: string): Promise<PollData | null> {
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     const response = await fetch(
-      `${process.env.BACKEND_PORT}/polls/${poll_id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/polls/${poll_id}`,
       {
         method: "GET",
         headers: {
@@ -91,12 +91,15 @@ async function closePollAction(pollId: string) {
     .map((c) => `${c.name}=${c.value}`)
     .join("; ");
 
-  const res = await fetch(`${process.env.BACKEND_PORT}/polls/${pollId}/close`, {
-    method: "POST",
-    headers: {
-      Cookie: cookieHeader,
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/close`,
+    {
+      method: "POST",
+      headers: {
+        Cookie: cookieHeader,
+      },
     },
-  });
+  );
 
   if (!res.ok) {
     const err = await res.json();

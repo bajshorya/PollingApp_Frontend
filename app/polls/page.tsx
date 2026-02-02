@@ -29,7 +29,7 @@ const getLivePolls = async (): Promise<Poll[] | null> => {
       .map((c) => `${c.name}=${c.value}`)
       .join("; ");
 
-    const response = await fetch(`${process.env.BACKEND_PORT}/polls`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/polls`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
