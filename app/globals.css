@@ -118,7 +118,7 @@
     @apply border-border outline-ring/50;
   }
   html {
-    background: linear-gradient(to bottom, #ffffff, #b3e0ff);
+    background:  #175588;
   }
   body {
     @apply text-foreground;
