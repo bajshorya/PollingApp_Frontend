@@ -8,6 +8,22 @@ function base64UrlToUint8Array(base64Url: string) {
   );
   return Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
 }
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.status === 502 && i < retries - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2s
+        continue;
+      }
+      return response;
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  }
+  throw new Error("Max retries reached");
+}
 
 function uint8ArrayToBase64Url(bytes: Uint8Array) {
   return btoa(String.fromCharCode(...bytes))
@@ -17,7 +33,7 @@ function uint8ArrayToBase64Url(bytes: Uint8Array) {
 }
 
 export async function signupWithPasskey(username: string) {
-  const startRes = await fetch(`${API_BASE}/register_start/${username}`, {
+  const startRes = await fetchWithRetry(`${API_BASE}/login_start/${username}`, {
     method: "POST",
     credentials: "include",
   });

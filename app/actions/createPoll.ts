@@ -16,7 +16,7 @@ export async function createPoll(formData: {
       .join("; ");
 
     const response = await fetch(
-      `http://\${process.env.NEXT_PUBLIC_API_URL}/polls`,
+      `http://${process.env.NEXT_PUBLIC_API_URL}/polls`,
       {
         method: "POST",
         headers: {
