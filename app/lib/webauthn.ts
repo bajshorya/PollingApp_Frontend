@@ -18,7 +18,9 @@ function uint8ArrayToBase64Url(bytes: Uint8Array) {
 
 // WebAuthn registration
 export async function signupWithPasskey(username: string) {
-  // Start registration
+  if (!API_BASE) {
+    throw new Error("API URL not configured");
+  }
   const startRes = await fetch(`${API_BASE}/register_start/${username}`, {
     method: "POST",
     headers: {
@@ -30,18 +32,15 @@ export async function signupWithPasskey(username: string) {
 
   const startData = await startRes.json();
 
-  // The backend returns the public_key directly, not nested in public_key field
   const options = startData.public_key || startData;
   const registration_state = startData.registration_state;
   const user_id = startData.user_id;
 
-  // Prepare WebAuthn options
   options.publicKey.challenge = base64UrlToUint8Array(
     options.publicKey.challenge,
   );
   options.publicKey.user.id = base64UrlToUint8Array(options.publicKey.user.id);
 
-  // Create credential
   const credential = await navigator.credentials.create({
     publicKey: options.publicKey,
   });
@@ -51,7 +50,6 @@ export async function signupWithPasskey(username: string) {
   const cred = credential as PublicKeyCredential;
   const attestation = cred.response as AuthenticatorAttestationResponse;
 
-  // Prepare finish payload
   const payload = {
     credential: {
       id: cred.id,
@@ -71,7 +69,6 @@ export async function signupWithPasskey(username: string) {
     username,
   };
 
-  // Finish registration
   const finishRes = await fetch(`${API_BASE}/register_finish`, {
     method: "POST",
     headers: {
@@ -87,7 +84,6 @@ export async function signupWithPasskey(username: string) {
 
   const finishData = await finishRes.json();
 
-  // Store the token if returned
   if (finishData.access_token) {
     localStorage.setItem("auth_token", finishData.access_token);
   }
@@ -95,9 +91,7 @@ export async function signupWithPasskey(username: string) {
   return finishData;
 }
 
-// WebAuthn authentication
 export async function signinWithPasskey(username: string) {
-  // Start authentication
   const startRes = await fetch(`${API_BASE}/login_start/${username}`, {
     method: "POST",
     headers: {
@@ -109,12 +103,10 @@ export async function signinWithPasskey(username: string) {
 
   const startData = await startRes.json();
 
-  // The backend returns the public_key directly, not nested in public_key field
   const options = startData.public_key || startData;
   const authentication_state = startData.authentication_state;
   const user_id = startData.user_id;
 
-  // Prepare WebAuthn options
   options.publicKey.challenge = base64UrlToUint8Array(
     options.publicKey.challenge,
   );
@@ -129,7 +121,6 @@ export async function signinWithPasskey(username: string) {
     );
   }
 
-  // Get assertion
   const assertion = await navigator.credentials.get({
     publicKey: options.publicKey,
   });
@@ -139,7 +130,6 @@ export async function signinWithPasskey(username: string) {
   const cred = assertion as PublicKeyCredential;
   const auth = cred.response as AuthenticatorAssertionResponse;
 
-  // Prepare finish payload
   const payload = {
     credential: {
       id: cred.id,
@@ -160,7 +150,6 @@ export async function signinWithPasskey(username: string) {
     username,
   };
 
-  // Finish authentication
   const finishRes = await fetch(`${API_BASE}/login_finish`, {
     method: "POST",
     headers: {
@@ -176,7 +165,6 @@ export async function signinWithPasskey(username: string) {
 
   const finishData = await finishRes.json();
 
-  // Store the token if returned
   if (finishData.access_token) {
     localStorage.setItem("auth_token", finishData.access_token);
   }
@@ -184,7 +172,6 @@ export async function signinWithPasskey(username: string) {
   return finishData;
 }
 
-// Helper function for polling endpoints
 export const fetchPolls = async () => {
   const token = localStorage.getItem("auth_token");
 

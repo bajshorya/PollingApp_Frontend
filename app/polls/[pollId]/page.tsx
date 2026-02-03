@@ -33,17 +33,14 @@ export default function PollPage() {
   const params = useParams();
   const router = useRouter();
 
-  // Debug: Log params to see what we're getting
   useEffect(() => {
     console.log("🔍 Route params:", params);
     console.log("🔍 Type of params:", typeof params);
     console.log("🔍 Params keys:", Object.keys(params));
 
-    // Check all possible param names
     console.log("🔍 params.pollId:", params.pollId);
     console.log("🔍 params.poll_id:", params.poll_id);
 
-    // Check current URL
     if (typeof window !== "undefined") {
       console.log("🔍 Current URL:", window.location.href);
       console.log("🔍 Current path:", window.location.pathname);
@@ -52,18 +49,14 @@ export default function PollPage() {
     }
   }, [params]);
 
-  // Get pollId from params - try different approaches
   const getPollId = () => {
-    // Try all possible param names
     const id = params.pollId || params.poll_id;
 
     if (!id) {
-      // Fallback: extract from URL
       if (typeof window !== "undefined") {
         const path = window.location.pathname;
         const segments = path.split("/");
         const lastSegment = segments[segments.length - 1];
-        // Check if it looks like a UUID
         const uuidRegex =
           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (uuidRegex.test(lastSegment)) {
@@ -85,13 +78,11 @@ export default function PollPage() {
   const [closeSuccess, setCloseSuccess] = useState(false);
   const [closeError, setCloseError] = useState<string | null>(null);
 
-  // Get current user ID from JWT token
   const getCurrentUserId = (): string | null => {
     const token = getAuthToken();
     if (!token) return null;
 
     try {
-      // Parse JWT token to get user ID
       const payload = JSON.parse(atob(token.split(".")[1]));
       return payload.sub;
     } catch {
@@ -103,7 +94,6 @@ export default function PollPage() {
   const isCreator = currentUserId && poll?.creator_id === currentUserId;
 
   const fetchPoll = async () => {
-    // Check if pollId is valid
     if (!pollId || pollId === "undefined" || pollId === "[pollId]") {
       console.error("❌ Invalid pollId:", pollId);
       setError("Invalid poll ID");
@@ -114,7 +104,6 @@ export default function PollPage() {
     try {
       setLoading(true);
 
-      // Check authentication
       if (!isAuthenticated()) {
         console.log("🔐 Not authenticated, redirecting to signin");
         router.push("/auth/signin");
@@ -227,12 +216,10 @@ export default function PollPage() {
 
       setCloseSuccess(true);
 
-      // Update poll status
       if (poll) {
         setPoll({ ...poll, closed: true });
       }
 
-      // Reset success message after 3 seconds
       setTimeout(() => {
         setCloseSuccess(false);
       }, 3000);
@@ -321,7 +308,6 @@ export default function PollPage() {
               Back to Polls
             </Link>
 
-            {/* Close Poll Button - Only show for creator */}
             {isCreator && !poll.closed && (
               <button
                 onClick={handleClosePoll}
@@ -343,7 +329,6 @@ export default function PollPage() {
             )}
           </div>
 
-          {/* Success/Error Messages */}
           {closeSuccess && (
             <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
               <div className="flex items-center gap-2 text-green-300">
@@ -391,7 +376,6 @@ export default function PollPage() {
               </div>
             </div>
 
-            {/* Creator Info */}
             {isCreator && (
               <div className="mb-6 p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl">
                 <p className="text-cyan-300 text-sm">

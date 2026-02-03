@@ -87,7 +87,6 @@ export default function CreateNewPollPage() {
         throw new Error("No poll ID returned from server");
       }
 
-      // Redirect to the poll page
       router.push(`/polls/${data.poll_id}`);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

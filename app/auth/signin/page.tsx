@@ -27,7 +27,6 @@ export default function SigninPage() {
       setStatus("Waiting for passkey…");
       const res = await signinWithPasskey(username);
 
-      // WebAuthn returns a different response structure
       const successMessage =
         res.message || res.status || "Authentication successful!";
       setStatus(`✅ ${successMessage}`);
@@ -52,7 +51,6 @@ export default function SigninPage() {
       setStatus("Authenticating…");
       const res = await loginUser(username);
 
-      // Traditional login returns AuthResponse which doesn't have message
       setStatus(`✅ Authentication successful! Welcome ${res.username}`);
 
       setTimeout(() => {
@@ -79,7 +77,6 @@ export default function SigninPage() {
           </p>
         </div>
 
-        {/* Auth method selector */}
         <div className="flex border border-white/10 rounded-lg p-1 bg-white/5">
           <button
             type="button"

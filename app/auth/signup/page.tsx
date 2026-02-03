@@ -31,7 +31,6 @@ export default function SignUpPage() {
     try {
       const res = await signupWithPasskey(username.trim());
 
-      // WebAuthn returns a different response structure
       const successMessage =
         res.message || res.status || "Registration successful!";
       setSuccess(`${successMessage} You can now sign in.`);
@@ -62,7 +61,6 @@ export default function SignUpPage() {
     try {
       const res = await registerUser(username.trim());
 
-      // Traditional registration returns AuthResponse which doesn't have message
       setSuccess(
         `Registration successful! Welcome ${res.username}. Redirecting to polls...`,
       );
@@ -112,7 +110,6 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            {/* Auth method selector */}
             <div className="flex border border-white/10 rounded-lg p-1 bg-white/5 mb-6">
               <button
                 type="button"

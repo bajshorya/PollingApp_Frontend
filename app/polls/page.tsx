@@ -33,7 +33,6 @@ export default function PollsPage() {
       try {
         setLoading(true);
 
-        // Check authentication
         if (!isAuthenticated()) {
           router.push("/auth/signin");
           return;

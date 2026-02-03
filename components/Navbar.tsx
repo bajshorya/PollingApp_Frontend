@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { AuthButton } from "./ui/navbar-menu";
 import { cn } from "@/lib/utils";
-import { getAuthToken, isAuthenticated, logoutUser } from "@/app/lib/jwt";
+import { getAuthToken, logoutUser } from "@/app/lib/jwt";
 
 export function NavbarDemo() {
   return (
@@ -27,7 +27,6 @@ function Navbar({ className }: { className?: string }) {
         return;
       }
 
-      // Verify token by making an API call
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/polls`, {
         method: "GET",
         headers: {
