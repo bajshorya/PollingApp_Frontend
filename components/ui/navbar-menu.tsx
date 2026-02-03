@@ -121,26 +121,18 @@ export const HoveredLink = ({ children, ...rest }: any) => {
 export const AuthButton = ({
   isLoggedIn,
   setIsLoggedIn,
+  onSignOut,
 }: {
   isLoggedIn: boolean;
   setIsLoggedIn: (value: boolean) => void;
+  onSignOut: () => void;
 }) => {
   const router = useRouter();
-  // ("`${process.env.BACKEND_PORT}`");
-  const handleSignOut = async () => {
-    try {
-      document.cookie = "webauthnrs=; max-age=0; path=/; domain=localhost;";
 
-      setIsLoggedIn(false);
-
-      router.push("/auth/signin");
-
-      setTimeout(() => {
-        router.refresh();
-      }, 100);
-    } catch (error) {
-      console.error("Error during sign out:", error);
-    }
+  const handleSignOut = () => {
+    onSignOut();
+    setIsLoggedIn(false);
+    router.push("/auth/signin");
   };
 
   const handleSignIn = () => {

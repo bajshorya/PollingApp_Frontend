@@ -8,22 +8,6 @@ function base64UrlToUint8Array(base64Url: string) {
   );
   return Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
 }
-async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const response = await fetch(url, options);
-      if (response.status === 502 && i < retries - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2s
-        continue;
-      }
-      return response;
-    } catch (error) {
-      if (i === retries - 1) throw error;
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-  }
-  throw new Error("Max retries reached");
-}
 
 function uint8ArrayToBase64Url(bytes: Uint8Array) {
   return btoa(String.fromCharCode(...bytes))
@@ -32,20 +16,32 @@ function uint8ArrayToBase64Url(bytes: Uint8Array) {
     .replace(/=/g, "");
 }
 
+// WebAuthn registration
 export async function signupWithPasskey(username: string) {
-  const startRes = await fetchWithRetry(`${API_BASE}/login_start/${username}`, {
+  // Start registration
+  const startRes = await fetch(`${API_BASE}/register_start/${username}`, {
     method: "POST",
-    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
+
   if (!startRes.ok) throw new Error("Failed to start registration");
 
-  const options = await startRes.json();
+  const startData = await startRes.json();
 
+  // The backend returns the public_key directly, not nested in public_key field
+  const options = startData.public_key || startData;
+  const registration_state = startData.registration_state;
+  const user_id = startData.user_id;
+
+  // Prepare WebAuthn options
   options.publicKey.challenge = base64UrlToUint8Array(
     options.publicKey.challenge,
   );
   options.publicKey.user.id = base64UrlToUint8Array(options.publicKey.user.id);
 
+  // Create credential
   const credential = await navigator.credentials.create({
     publicKey: options.publicKey,
   });
@@ -55,40 +51,70 @@ export async function signupWithPasskey(username: string) {
   const cred = credential as PublicKeyCredential;
   const attestation = cred.response as AuthenticatorAttestationResponse;
 
+  // Prepare finish payload
   const payload = {
-    id: cred.id,
-    rawId: uint8ArrayToBase64Url(new Uint8Array(cred.rawId)),
-    type: cred.type,
-    response: {
-      attestationObject: uint8ArrayToBase64Url(
-        new Uint8Array(attestation.attestationObject),
-      ),
-      clientDataJSON: uint8ArrayToBase64Url(
-        new Uint8Array(attestation.clientDataJSON),
-      ),
+    credential: {
+      id: cred.id,
+      rawId: uint8ArrayToBase64Url(new Uint8Array(cred.rawId)),
+      type: cred.type,
+      response: {
+        attestationObject: uint8ArrayToBase64Url(
+          new Uint8Array(attestation.attestationObject),
+        ),
+        clientDataJSON: uint8ArrayToBase64Url(
+          new Uint8Array(attestation.clientDataJSON),
+        ),
+      },
     },
+    registration_state,
+    user_id,
+    username,
   };
 
+  // Finish registration
   const finishRes = await fetch(`${API_BASE}/register_finish`, {
     method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(payload),
   });
 
-  if (!finishRes.ok) throw new Error("Registration failed");
-  return finishRes.json();
+  if (!finishRes.ok) {
+    const errorData = await finishRes.json();
+    throw new Error(errorData.message || "Registration failed");
+  }
+
+  const finishData = await finishRes.json();
+
+  // Store the token if returned
+  if (finishData.access_token) {
+    localStorage.setItem("auth_token", finishData.access_token);
+  }
+
+  return finishData;
 }
 
+// WebAuthn authentication
 export async function signinWithPasskey(username: string) {
+  // Start authentication
   const startRes = await fetch(`${API_BASE}/login_start/${username}`, {
     method: "POST",
-    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
+
   if (!startRes.ok) throw new Error("Failed to start authentication");
 
-  const options = await startRes.json();
+  const startData = await startRes.json();
 
+  // The backend returns the public_key directly, not nested in public_key field
+  const options = startData.public_key || startData;
+  const authentication_state = startData.authentication_state;
+  const user_id = startData.user_id;
+
+  // Prepare WebAuthn options
   options.publicKey.challenge = base64UrlToUint8Array(
     options.publicKey.challenge,
   );
@@ -103,6 +129,7 @@ export async function signinWithPasskey(username: string) {
     );
   }
 
+  // Get assertion
   const assertion = await navigator.credentials.get({
     publicKey: options.publicKey,
   });
@@ -112,28 +139,70 @@ export async function signinWithPasskey(username: string) {
   const cred = assertion as PublicKeyCredential;
   const auth = cred.response as AuthenticatorAssertionResponse;
 
+  // Prepare finish payload
   const payload = {
-    id: cred.id,
-    rawId: uint8ArrayToBase64Url(new Uint8Array(cred.rawId)),
-    type: cred.type,
-    response: {
-      authenticatorData: uint8ArrayToBase64Url(
-        new Uint8Array(auth.authenticatorData),
-      ),
-      clientDataJSON: uint8ArrayToBase64Url(
-        new Uint8Array(auth.clientDataJSON),
-      ),
-      signature: uint8ArrayToBase64Url(new Uint8Array(auth.signature)),
+    credential: {
+      id: cred.id,
+      rawId: uint8ArrayToBase64Url(new Uint8Array(cred.rawId)),
+      type: cred.type,
+      response: {
+        authenticatorData: uint8ArrayToBase64Url(
+          new Uint8Array(auth.authenticatorData),
+        ),
+        clientDataJSON: uint8ArrayToBase64Url(
+          new Uint8Array(auth.clientDataJSON),
+        ),
+        signature: uint8ArrayToBase64Url(new Uint8Array(auth.signature)),
+      },
     },
+    authentication_state,
+    user_id,
+    username,
   };
 
+  // Finish authentication
   const finishRes = await fetch(`${API_BASE}/login_finish`, {
     method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(payload),
   });
 
-  if (!finishRes.ok) throw new Error("Authentication failed");
-  return finishRes.json();
+  if (!finishRes.ok) {
+    const errorData = await finishRes.json();
+    throw new Error(errorData.message || "Authentication failed");
+  }
+
+  const finishData = await finishRes.json();
+
+  // Store the token if returned
+  if (finishData.access_token) {
+    localStorage.setItem("auth_token", finishData.access_token);
+  }
+
+  return finishData;
 }
+
+// Helper function for polling endpoints
+export const fetchPolls = async () => {
+  const token = localStorage.getItem("auth_token");
+
+  const response = await fetch(`${API_BASE}/polls`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    throw new Error("Unauthorized");
+  }
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Failed to fetch polls");
+  }
+
+  return response.json();
+};

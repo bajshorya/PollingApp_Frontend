@@ -3,15 +3,14 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const protectedPaths = ["/polls", "/create-new-poll"];
-
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path),
   );
 
   if (isProtected) {
-    const sessionCookie = request.cookies.get("webauthnrs");
+    const authCookie = request.cookies.get("auth_token");
 
-    if (!sessionCookie) {
+    if (!authCookie) {
       return NextResponse.redirect(new URL("/auth/signin", request.url));
     }
   }

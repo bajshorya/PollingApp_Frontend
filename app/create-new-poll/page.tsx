@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, LogIn, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { removeAuthToken } from "@/app/lib/jwt"; // Added import
 
 export default function CreateNewPollPage() {
   const [title, setTitle] = useState("");
@@ -35,38 +36,63 @@ export default function CreateNewPollPage() {
     setLoading(true);
     setError("");
 
-    const cookieString = document.cookie;
+    // Get JWT token
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      setError("You need to be signed in to create a poll");
+      setLoading(false);
+      return;
+    }
 
     try {
+      console.log("Creating poll with data:", {
+        title,
+        description: description || null,
+        options: options.filter((opt) => opt.trim() !== ""),
+      });
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/polls`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Cookie: cookieString,
+          Authorization: `Bearer ${token}`,
         },
-        credentials: "include",
         body: JSON.stringify({
           title,
           description: description || null,
           options: options.filter((opt) => opt.trim() !== ""),
         }),
       });
+
+      console.log("Create poll response status:", response.status);
+
       if (response.status === 401) {
         setError("You need to be signed in to create a poll");
+        removeAuthToken();
+        router.push("/auth/signin");
         return;
       }
 
       if (!response.ok) {
         const data = await response.json();
+        console.error("Create poll error:", data);
         throw new Error(data.error || "Failed to create poll");
       }
 
       const data = await response.json();
+      console.log("Create poll success data:", data);
+
+      // Ensure we have the poll_id
+      if (!data.poll_id) {
+        throw new Error("No poll ID returned from server");
+      }
+
+      // Redirect to the poll page
       router.push(`/polls/${data.poll_id}`);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      setError(err.message);
       console.error("Error creating poll:", err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }

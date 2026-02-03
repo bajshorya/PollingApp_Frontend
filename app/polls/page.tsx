@@ -1,9 +1,12 @@
-export const dynamic = "force-dynamic";
-import { Suspense } from "react";
-import { TrendingUp, LogIn } from "lucide-react";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import LivePollGrid from "@/components/LivePollGrid";
-import { cookies } from "next/headers";
+import { NavbarDemo } from "@/components/Navbar";
+import { ArrowLeft, Plus, LogIn } from "lucide-react";
 import Link from "next/link";
+import { getAuthToken, isAuthenticated } from "@/app/lib/jwt";
 
 interface Poll {
   id: string;
@@ -14,128 +17,131 @@ interface Poll {
   closed: boolean;
   user_voted: boolean;
   current_user_id?: string;
-  options: Array<{
-    id: string;
-    text: string;
-    votes: number;
-  }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  options: any[];
+  total_votes?: number;
 }
 
-const getLivePolls = async (): Promise<Poll[] | null> => {
-  try {
-    const cookieStore = await cookies();
-    const cookieHeader = cookieStore
-      .getAll()
-      .map((c) => `${c.name}=${c.value}`)
-      .join("; ");
+export default function PollsPage() {
+  const [polls, setPolls] = useState<Poll[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/polls`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieHeader,
-      },
-      cache: "no-store",
-    });
+  useEffect(() => {
+    const fetchPolls = async () => {
+      try {
+        setLoading(true);
 
-    if (response.status === 401) {
-      return null;
-    }
+        // Check authentication
+        if (!isAuthenticated()) {
+          router.push("/auth/signin");
+          return;
+        }
 
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("Backend /polls error:", text);
-      return [];
-    }
+        const token = getAuthToken();
+        if (!token) {
+          router.push("/auth/signin");
+          return;
+        }
 
-    const polls: Poll[] = await response.json();
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/polls`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
 
-    return polls.map((poll) => ({
-      ...poll,
-      options: poll.options || [],
-      total_votes:
-        poll.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0) || 0,
-    }));
-  } catch (error) {
-    console.error("Error fetching live polls:", error);
-    return [];
-  }
-};
+        if (response.status === 401) {
+          localStorage.removeItem("auth_token");
+          router.push("/auth/signin");
+          return;
+        }
 
-function UnauthenticatedMessage() {
-  return (
-    <div className="w-full py-20 flex items-center justify-center">
-      <div className="text-center max-w-md">
-        <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
-          <LogIn className="w-8 h-8 text-white/60" />
+        if (!response.ok) {
+          throw new Error("Failed to fetch polls");
+        }
+
+        const data = await response.json();
+        setPolls(data);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPolls();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#175588] relative overflow-hidden">
+        <NavbarDemo />
+        <div className="pt-32 pb-12 px-4">
+          <div className="max-w-6xl mx-auto text-center">
+            <div className="w-16 h-16 border-4 border-white/20 border-t-cyan-300 rounded-full animate-spin mx-auto mb-6" />
+            <p className="text-white/60">Loading polls...</p>
+          </div>
         </div>
-        <h2 className="text-2xl font-bold text-white mb-4">
-          Authentication Required
-        </h2>
-        <p className="text-white/60 mb-6">
-          You need to be signed in to view and participate in polls.
-        </p>
-        <Link
-          href="/auth/signin"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white transition-colors"
-        >
-          <LogIn className="w-4 h-4" />
-          Sign In
-        </Link>
       </div>
-    </div>
-  );
-}
-
-async function PollsFetcher() {
-  const polls = await getLivePolls();
-
-  if (polls === null) {
-    return <UnauthenticatedMessage />;
+    );
   }
 
-  return <LivePollGrid initialPolls={polls} />;
-}
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#175588] relative overflow-hidden">
+        <NavbarDemo />
+        <div className="pt-32 pb-12 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-8 text-center">
+              <p className="text-red-300 mb-4">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-const Loader = () => (
-  <div className="w-full py-20 flex items-center justify-center">
-    <div className="text-center">
-      <div className="w-12 h-12 border-4 border-white/20 border-t-white/60 rounded-full animate-spin mx-auto mb-4" />
-      <p className="text-white/60 text-base noto-sans-regular">
-        Loading live polls...
-      </p>
-    </div>
-  </div>
-);
-
-export default function LivePollsPage() {
   return (
-    <div className="min-h-screen bg-[#175588] relative overflow-hidden noto-sans-regular">
-      <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-400/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-400/5 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-[#175588] relative overflow-hidden">
+      <NavbarDemo />
 
-      <div className="relative z-10 w-full pt-30 pb-12 px-4">
+      <div className="pt-32 pb-12 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-10">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-6 h-6 text-cyan-300/80" />
+          <div className="flex justify-between items-center mb-12">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.push("/")}
+                className="inline-flex items-center gap-2 text-white/60 hover:text-white"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Home
+              </button>
               <h1 className="text-4xl text-white inria-serif-bold">
                 Live Polls
               </h1>
-              <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full text-sm text-green-300 flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                Real-time
-              </div>
             </div>
-            <p className="text-white/50 text-sm noto-sans-light">
-              Browse and participate in polls. Updates happen in real-time as
-              users vote.
-            </p>
+            <Link
+              href="/create-new-poll"
+              className="px-6 py-3 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/30 rounded-xl text-cyan-300 font-medium transition-colors flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Create Poll
+            </Link>
           </div>
 
-          <Suspense fallback={<Loader />}>
-            <PollsFetcher />
-          </Suspense>
+          <LivePollGrid initialPolls={polls} />
         </div>
       </div>
     </div>

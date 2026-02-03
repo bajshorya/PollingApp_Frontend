@@ -75,11 +75,15 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
         `🔗 SSE connection attempt ${reconnectAttempts + 1}/${maxReconnectAttempts}`,
       );
 
+      // Get JWT token
+      const token = localStorage.getItem("auth_token");
+      if (!token) {
+        console.error("❌ No auth token found for SSE");
+        return;
+      }
+
       const eventSource = new EventSource(
-        `${process.env.NEXT_PUBLIC_API_URL}/polls/sse`,
-        {
-          withCredentials: true,
-        },
+        `${process.env.NEXT_PUBLIC_API_URL}/polls/sse?token=${encodeURIComponent(token)}`,
       );
 
       eventSource.onopen = () => {

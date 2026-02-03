@@ -61,13 +61,18 @@ export default function PollVoteClient({
     console.log("Starting SSE connection for poll:", pollId);
     setConnectionStatus("connecting");
 
-    const sseUrl = `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/sse`;
+    // Get JWT token
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      console.error("❌ No auth token found for SSE");
+      setConnectionStatus("disconnected");
+      return;
+    }
+
+    const sseUrl = `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/sse?token=${encodeURIComponent(token)}`;
     console.log("Connecting to SSE URL:", sseUrl);
 
-    const eventSource = new EventSource(sseUrl, {
-      withCredentials: true,
-    });
-
+    const eventSource = new EventSource(sseUrl);
     eventSource.onopen = () => {
       console.log("✅ SSE connection opened for poll:", pollId);
       setConnectionStatus("connected");
@@ -144,6 +149,13 @@ export default function PollVoteClient({
       setError(null);
       console.log("Casting vote for option:", optionId);
 
+      const token = localStorage.getItem("auth_token");
+      if (!token) {
+        setError("Authentication required");
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/vote`,
@@ -151,8 +163,8 @@ export default function PollVoteClient({
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
-            credentials: "include",
             body: JSON.stringify({ option_id: optionId }),
           },
         );

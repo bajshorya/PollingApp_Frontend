@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { signinWithPasskey } from "@/app/lib/webauthn";
+import { loginUser } from "@/app/lib/jwt";
 import Link from "next/link";
 
 export default function SigninPage() {
@@ -13,8 +14,11 @@ export default function SigninPage() {
   const [username, setUsername] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [authMethod, setAuthMethod] = useState<"passkey" | "traditional">(
+    "passkey",
+  );
 
-  async function handleSignin(e: React.FormEvent<HTMLFormElement>) {
+  async function handlePasskeySignin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!username) return setStatus("Username required");
 
@@ -22,7 +26,34 @@ export default function SigninPage() {
       setLoading(true);
       setStatus("Waiting for passkey…");
       const res = await signinWithPasskey(username);
-      setStatus(`✅ ${res.message}`);
+
+      // WebAuthn returns a different response structure
+      const successMessage =
+        res.message || res.status || "Authentication successful!";
+      setStatus(`✅ ${successMessage}`);
+
+      setTimeout(() => {
+        router.push("/polls");
+      }, 1000);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      setStatus(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleTraditionalSignin(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!username) return setStatus("Username required");
+
+    try {
+      setLoading(true);
+      setStatus("Authenticating…");
+      const res = await loginUser(username);
+
+      // Traditional login returns AuthResponse which doesn't have message
+      setStatus(`✅ Authentication successful! Welcome ${res.username}`);
 
       setTimeout(() => {
         router.push("/polls");
@@ -44,10 +75,44 @@ export default function SigninPage() {
         <div className="space-y-2">
           <h2 className="text-3xl font-bold text-white">Welcome back</h2>
           <p className="text-sm text-white/60">
-            Sign in with your passkey to access your account
+            Sign in to access your account
           </p>
         </div>
-        <form className="space-y-6" onSubmit={handleSignin}>
+
+        {/* Auth method selector */}
+        <div className="flex border border-white/10 rounded-lg p-1 bg-white/5">
+          <button
+            type="button"
+            onClick={() => setAuthMethod("passkey")}
+            className={`flex-1 py-2 text-sm rounded-md transition-colors ${
+              authMethod === "passkey"
+                ? "bg-white/20 text-white"
+                : "text-white/60 hover:text-white/90"
+            }`}
+          >
+            Passkey
+          </button>
+          <button
+            type="button"
+            onClick={() => setAuthMethod("traditional")}
+            className={`flex-1 py-2 text-sm rounded-md transition-colors ${
+              authMethod === "traditional"
+                ? "bg-white/20 text-white"
+                : "text-white/60 hover:text-white/90"
+            }`}
+          >
+            Traditional
+          </button>
+        </div>
+
+        <form
+          className="space-y-6"
+          onSubmit={
+            authMethod === "passkey"
+              ? handlePasskeySignin
+              : handleTraditionalSignin
+          }
+        >
           <LabelInputContainer>
             <Label htmlFor="username" className="text-white/90">
               Username
@@ -68,7 +133,11 @@ export default function SigninPage() {
             type="submit"
             disabled={loading}
           >
-            {loading ? "Waiting for passkey…" : "Sign in with Passkey"} →
+            {loading
+              ? "Authenticating…"
+              : authMethod === "passkey"
+                ? "Sign in with Passkey →"
+                : "Sign in →"}
             <BottomGradient />
           </button>
 

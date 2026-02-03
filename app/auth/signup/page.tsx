@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signupWithPasskey } from "@/app/lib/webauthn";
+import { registerUser } from "@/app/lib/jwt";
 import { ArrowLeft, UserPlus, CheckCircle, XCircle } from "lucide-react";
 
 export default function SignUpPage() {
@@ -11,9 +12,12 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [authMethod, setAuthMethod] = useState<"passkey" | "traditional">(
+    "passkey",
+  );
   const router = useRouter();
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handlePasskeySignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim()) {
       setError("Username is required");
@@ -25,13 +29,17 @@ export default function SignUpPage() {
     setSuccess("");
 
     try {
-      await signupWithPasskey(username.trim());
-      setSuccess("Registration successful! You can now sign in.");
+      const res = await signupWithPasskey(username.trim());
+
+      // WebAuthn returns a different response structure
+      const successMessage =
+        res.message || res.status || "Registration successful!";
+      setSuccess(`${successMessage} You can now sign in.`);
 
       setTimeout(() => {
         router.push("/auth/signin");
       }, 2000);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error("Registration error:", err);
       setError(err.message || "Registration failed. Please try again.");
@@ -39,6 +47,40 @@ export default function SignUpPage() {
       setLoading(false);
     }
   };
+
+  const handleTraditionalSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim()) {
+      setError("Username is required");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await registerUser(username.trim());
+
+      // Traditional registration returns AuthResponse which doesn't have message
+      setSuccess(
+        `Registration successful! Welcome ${res.username}. Redirecting to polls...`,
+      );
+
+      setTimeout(() => {
+        router.push("/polls");
+      }, 1000);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error("Registration error:", err);
+      setError(err.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit =
+    authMethod === "passkey" ? handlePasskeySignUp : handleTraditionalSignUp;
 
   return (
     <div className="min-h-screen bg-[#175588] relative overflow-hidden">
@@ -65,12 +107,38 @@ export default function SignUpPage() {
                   Create Account
                 </h1>
                 <p className="text-white/60 text-sm">
-                  Sign up with Passkey for secure authentication
+                  Sign up for secure authentication
                 </p>
               </div>
             </div>
 
-            <form onSubmit={handleSignUp} className="space-y-6">
+            {/* Auth method selector */}
+            <div className="flex border border-white/10 rounded-lg p-1 bg-white/5 mb-6">
+              <button
+                type="button"
+                onClick={() => setAuthMethod("passkey")}
+                className={`flex-1 py-2 text-sm rounded-md transition-colors ${
+                  authMethod === "passkey"
+                    ? "bg-white/20 text-white"
+                    : "text-white/60 hover:text-white/90"
+                }`}
+              >
+                Passkey
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMethod("traditional")}
+                className={`flex-1 py-2 text-sm rounded-md transition-colors ${
+                  authMethod === "traditional"
+                    ? "bg-white/20 text-white"
+                    : "text-white/60 hover:text-white/90"
+                }`}
+              >
+                Traditional
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-white/80 mb-2 text-sm font-medium">
                   Username
@@ -114,12 +182,16 @@ export default function SignUpPage() {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-cyan-300/30 border-t-cyan-300 rounded-full animate-spin" />
-                    Creating account...
+                    {authMethod === "passkey"
+                      ? "Creating account..."
+                      : "Registering..."}
                   </>
                 ) : (
                   <>
                     <UserPlus className="w-4 h-4" />
-                    Create Account with Passkey
+                    {authMethod === "passkey"
+                      ? "Create Account with Passkey"
+                      : "Create Account"}
                   </>
                 )}
               </button>
@@ -137,13 +209,15 @@ export default function SignUpPage() {
               </p>
             </div>
 
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/60 text-xs text-center">
-                Using Passkey means no passwords to remember. Your device&apos;s
-                biometrics (like Face ID or fingerprint) will be used for
-                authentication.
-              </p>
-            </div>
+            {authMethod === "passkey" && (
+              <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
+                <p className="text-white/60 text-xs text-center">
+                  Using Passkey means no passwords to remember. Your
+                  device&apos;s biometrics (like Face ID or fingerprint) will be
+                  used for authentication.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
