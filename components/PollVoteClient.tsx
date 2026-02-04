@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { Users, TrendingUp, CheckCircle } from "lucide-react";
 
 interface BackendOption {
   id: string;
@@ -61,7 +62,6 @@ export default function PollVoteClient({
     console.log("Starting SSE connection for poll:", pollId);
     setConnectionStatus("connecting");
 
-    // Get JWT token
     const token = localStorage.getItem("auth_token");
     if (!token) {
       console.error("❌ No auth token found for SSE");
@@ -200,29 +200,42 @@ export default function PollVoteClient({
   const totalVotes = options.reduce((s, o) => s + o.votes, 0);
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center gap-4">
-          <span className="text-white/60 text-sm">
-            Total votes: {totalVotes.toLocaleString()}
-          </span>
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                connectionStatus === "connected"
-                  ? "bg-green-500 animate-pulse"
-                  : connectionStatus === "connecting"
-                    ? "bg-yellow-500"
-                    : "bg-red-500"
-              }`}
-            />
-            <span className="text-xs text-white/50">{connectionStatus}</span>
+    <div className="space-y-5">
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-3">
+        <div className="flex items-center gap-5">
+          <div className="flex items-center gap-2 text-white/70">
+            <Users className="w-4 h-4" strokeWidth={1.5} />
+            <span className="font-semibold">{totalVotes.toLocaleString()}</span>
+            <span className="text-white/50 text-sm">votes</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <div className="relative">
+              <div
+                className={`w-2 h-2 rounded-full transition-all duration-500 ${
+                  connectionStatus === "connected"
+                    ? "bg-emerald-400 shadow-lg shadow-emerald-400/50"
+                    : connectionStatus === "connecting"
+                      ? "bg-yellow-400"
+                      : "bg-slate-400"
+                }`}
+              />
+              {connectionStatus === "connected" && (
+                <>
+                  <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-40" />
+                  <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-pulse opacity-60" />
+                </>
+              )}
+            </div>
+            <span className="text-xs text-white/50 font-medium">
+              {connectionStatus}
+            </span>
           </div>
         </div>
         {!closed && (
-          <span className="px-2 py-1 bg-green-500/20 border border-green-500/30 rounded-full text-xs text-green-300">
-            Live updating
-          </span>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-linear-to-r from-emerald-500/15 to-green-500/15 border border-emerald-400/30 rounded-full">
+            <TrendingUp className="w-3 h-3 text-emerald-400" strokeWidth={2} />
+            <span className="text-xs text-emerald-300 font-bold">Live</span>
+          </div>
         )}
       </div>
 
@@ -235,52 +248,93 @@ export default function PollVoteClient({
             key={option.id}
             disabled={closed || voted || loading}
             onClick={() => castVote(option.id)}
-            className={`relative w-full text-left rounded-xl border px-5 py-4 transition-all duration-300
+            className={`group relative w-full text-left rounded-2xl border px-6 py-5 transition-all duration-500 overflow-hidden
               ${
                 closed
-                  ? "opacity-70 cursor-not-allowed border-white/10"
+                  ? "opacity-60 cursor-not-allowed border-white/8 bg-white/2"
                   : voted
-                    ? "cursor-not-allowed border-white/10"
-                    : "hover:border-white/40 hover:bg-white/10 border-white/20"
+                    ? "cursor-not-allowed border-white/12 bg-white/4"
+                    : "hover:border-cyan-400/40 hover:bg-white/8 hover:scale-[1.02] border-white/15 bg-white/4 hover:shadow-lg hover:shadow-cyan-500/10"
               }
               ${
                 voted && !closed
-                  ? "cursor-default hover:border-white/10 hover:bg-transparent"
+                  ? "cursor-default hover:border-white/12 hover:bg-white/4 hover:scale-100 hover:shadow-none"
                   : ""
               }`}
           >
             <div
-              className="absolute inset-y-0 left-0 bg-white/10 rounded-xl transition-all duration-500 ease-out"
+              className={`absolute inset-y-0 left-0 rounded-2xl transition-all duration-700 ease-out ${
+                percent > 0
+                  ? "bg-linear-to-r from-cyan-500/15 to-blue-500/12"
+                  : "bg-transparent"
+              }`}
               style={{ width: `${percent}%` }}
             />
 
-            <div className="relative flex justify-between items-center">
-              <span className="text-white noto-sans-medium text-base">
+            <div className="relative flex justify-between items-center gap-4">
+              <span className="text-white font-semibold text-base flex-1">
                 {option.text || "Unnamed option"}
               </span>
-              <div className="flex items-center gap-3">
-                <span className="xanh-mono-regular text-white/80 text-sm">
-                  {option.votes.toLocaleString()} votes
-                </span>
-                <span className="px-2 py-1 bg-white/10 rounded text-xs text-white/90 min-w-12 text-center">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-white/70">
+                  <Users className="w-4 h-4" strokeWidth={1.5} />
+                  <span className="font-semibold text-sm">
+                    {option.votes.toLocaleString()}
+                  </span>
+                </div>
+                <div
+                  className={`px-3 py-1.5 rounded-lg text-sm font-bold min-w-16 text-center transition-all duration-300 ${
+                    percent > 0
+                      ? "bg-linear-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-cyan-300"
+                      : "bg-white/8 text-white/60"
+                  }`}
+                >
                   {percent}%
-                </span>
+                </div>
               </div>
             </div>
           </button>
         );
       })}
 
-      <div className="text-sm text-white/50 mt-3">
-        {error && <p className="text-red-400 mb-2">{error}</p>}
+      <div className="pt-4 space-y-3">
+        {error && (
+          <div className="p-4 bg-linear-to-r from-rose-500/12 to-red-500/12 border border-rose-400/30 rounded-xl">
+            <p className="text-rose-300 font-medium text-sm">{error}</p>
+          </div>
+        )}
         {voted && !error && (
-          <p className="text-green-300">✓ Your vote has been recorded!</p>
+          <div className="p-4 bg-linear-to-r from-emerald-500/12 to-green-500/12 border border-emerald-400/30 rounded-xl">
+            <div className="flex items-center gap-2.5 text-emerald-300">
+              <CheckCircle className="w-4 h-4 shrink-0" strokeWidth={2} />
+              <p className="font-medium text-sm">
+                Your vote has been recorded!
+              </p>
+            </div>
+          </div>
         )}
-        {closed && <p className="text-red-300">Poll is closed.</p>}
-        {!closed && !voted && !loading && (
-          <p className="text-cyan-300">Click an option to vote.</p>
+        {closed && (
+          <div className="p-4 bg-linear-to-r from-rose-500/12 to-red-500/12 border border-rose-400/30 rounded-xl">
+            <p className="text-rose-300 font-medium text-sm">
+              This poll is now closed
+            </p>
+          </div>
         )}
-        {loading && <p className="text-yellow-300">Submitting your vote...</p>}
+        {!closed && !voted && !loading && !error && (
+          <div className="p-4 bg-linear-to-r from-cyan-500/8 to-blue-500/8 border border-cyan-400/25 rounded-xl">
+            <p className="text-cyan-300 font-medium text-sm">
+              Click an option to cast your vote
+            </p>
+          </div>
+        )}
+        {loading && (
+          <div className="p-4 bg-linear-to-r from-yellow-500/12 to-amber-500/12 border border-yellow-400/30 rounded-xl">
+            <div className="flex items-center gap-2.5 text-yellow-300">
+              <div className="w-4 h-4 border-2 border-yellow-300/30 border-t-yellow-300 rounded-full animate-spin" />
+              <p className="font-medium text-sm">Submitting your vote...</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
