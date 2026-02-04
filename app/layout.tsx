@@ -8,6 +8,7 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { NavbarDemo } from "@/components/Navbar";
+import { AuthProvider } from "./context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,8 +54,10 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} ${xanhMono.variable} ${inriaSerif.variable} ${notoSans.variable} antialiased bg-[#175588] `}
       >
-        <NavbarDemo />
-        {children}
+        <AuthProvider>
+          <NavbarDemo />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

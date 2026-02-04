@@ -82,7 +82,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
         `🔗 SSE connection attempt ${reconnectAttempts + 1}/${maxReconnectAttempts}`,
       );
 
-      // Get JWT token
       const token = localStorage.getItem("auth_token");
       if (!token) {
         console.error("❌ No auth token found for SSE");
@@ -293,9 +292,9 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
   if (!polls || polls.length === 0) {
     return (
       <div className="relative bg-linear-to-br from-white/[0.07] via-white/4 to-white/2 backdrop-blur-sm rounded-3xl p-24 border border-white/8 text-center overflow-hidden group">
-        <div className="absolute inset-0 bg-linear-to-tr from-cyan-500/3 via-transparent to-violet-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <div className="absolute inset-0 bg-linear-to-tr from-cyan-500/3 via-transparent to-violet-500/3 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
         <div className="relative">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/[0.12] flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-linear-to-br from-white/8 to-white/2 border border-white/12 flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
             <TrendingUp
               className="w-9 h-9 text-white/40 group-hover:text-white/60 transition-colors duration-500"
               strokeWidth={1.5}

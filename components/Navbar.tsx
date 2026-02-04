@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { AuthButton } from "./ui/navbar-menu";
 import { cn } from "@/lib/utils";
-import { getAuthToken, logoutUser } from "@/app/lib/jwt";
+import { useAuth } from "@/app/context/AuthContext";
 
 export function NavbarDemo() {
   return (
@@ -14,58 +14,14 @@ export function NavbarDemo() {
 }
 
 function Navbar({ className }: { className?: string }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
-
-  const checkAuthStatus = async () => {
-    try {
-      const token = getAuthToken();
-      if (!token) {
-        setIsLoggedIn(false);
-        return;
-      }
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/polls`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setIsLoggedIn(response.status !== 401);
-    } catch {
-      setIsLoggedIn(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  useEffect(() => {
-    checkAuthStatus();
-  }, [pathname]);
+  const { isLoggedIn, logout } = useAuth();
 
   const handleSignOut = () => {
-    logoutUser();
-    setIsLoggedIn(false);
+    logout();
+    router.push("/auth/signin");
   };
-
-  if (isLoading) {
-    return (
-      <div
-        className={cn("fixed inset-x-0 max-w-2xl mx-auto z-50 px-4", className)}
-      >
-        <div className="rounded-full border border-white/15 bg-white/8 backdrop-blur-xl shadow-2xl flex justify-between items-center px-6 py-3">
-          <div className="h-9 w-32 bg-white/6 rounded-full animate-pulse" />
-          <div className="h-9 w-24 bg-white/6 rounded-full animate-pulse" />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div
@@ -120,7 +76,7 @@ function Navbar({ className }: { className?: string }) {
               onClick={() => router.push("/create-new-poll")}
               className="group/btn relative px-4 py-2 text-sm font-bold rounded-full bg-linear-to-r from-cyan-500/18 to-blue-500/18 hover:from-cyan-500/25 hover:to-blue-500/25 text-cyan-300 border border-cyan-400/40 hover:border-cyan-400/60 transition-all duration-300 flex items-center gap-2 overflow-hidden hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/20"
             >
-              <div className="absolute inset-0 bg-linear-to-r from-cyan-400/0 via-cyan-400/10 to-cyan-400/0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
+              <div className="absolute inset-0 bg-linear-to-r from-cyan-400/0 via-cyan-400/10 to-cyan-400/0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
               <svg
                 className="w-4 h-4 relative z-10 group-hover/btn:rotate-90 transition-transform duration-300"
                 fill="none"
@@ -141,7 +97,7 @@ function Navbar({ className }: { className?: string }) {
         <div className="relative z-10">
           <AuthButton
             isLoggedIn={isLoggedIn}
-            setIsLoggedIn={setIsLoggedIn}
+            setIsLoggedIn={() => {}}
             onSignOut={handleSignOut}
           />
         </div>

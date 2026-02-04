@@ -1,0 +1,87 @@
+"use client";
+
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { getAuthToken } from "@/app/lib/jwt";
+
+interface AuthContextType {
+  isLoggedIn: boolean;
+  isLoading: boolean;
+  checkAuth: () => Promise<void>;
+  logout: () => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const checkAuth = async () => {
+    console.log("🔐 Checking auth status...");
+
+    const token = getAuthToken();
+    if (!token) {
+      console.log("🔐 No token found locally");
+      setIsLoggedIn(false);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/polls`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const isAuthenticated = response.status !== 401;
+      console.log("🔐 Server auth check result:", isAuthenticated);
+      setIsLoggedIn(isAuthenticated);
+    } catch (error) {
+      console.warn("🔐 Auth check failed:", error);
+      setIsLoggedIn(!!token);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logout = () => {
+    console.log("🔐 Logging out...");
+    localStorage.removeItem("auth_token");
+    setIsLoggedIn(false);
+  };
+
+  useEffect(() => {
+    console.log("🔐 AuthProvider mounted");
+    const token = getAuthToken();
+    console.log("🔐 Initial token check:", token ? "Found" : "Not found");
+    setIsLoggedIn(!!token);
+
+    if (token) {
+      checkAuth();
+    }
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ isLoggedIn, isLoading, checkAuth, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+}

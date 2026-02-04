@@ -12,16 +12,15 @@ import {
   XCircle,
   Sparkles,
 } from "lucide-react";
+import { useAuth } from "@/app/context/AuthContext"; 
 
 export default function SignUpPage() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [authMethod, setAuthMethod] = useState<"passkey" | "traditional">(
-    "passkey",
-  );
   const router = useRouter();
+  const { checkAuth } = useAuth(); 
 
   const handlePasskeySignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +40,8 @@ export default function SignUpPage() {
         res.message || res.status || "Registration successful!";
       setSuccess(`${successMessage} You can now sign in.`);
 
+      await checkAuth();
+
       setTimeout(() => {
         router.push("/auth/signin");
       }, 2000);
@@ -52,39 +53,6 @@ export default function SignUpPage() {
       setLoading(false);
     }
   };
-
-  const handleTraditionalSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!username.trim()) {
-      setError("Username is required");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const res = await registerUser(username.trim());
-
-      setSuccess(
-        `Registration successful! Welcome ${res.username}. Redirecting to polls...`,
-      );
-
-      setTimeout(() => {
-        router.push("/polls");
-      }, 1000);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error("Registration error:", err);
-      setError(err.message || "Registration failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit =
-    authMethod === "passkey" ? handlePasskeySignUp : handleTraditionalSignUp;
 
   return (
     <div className="min-h-screen bg-[#175588] relative overflow-hidden">
@@ -126,39 +94,7 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              <div className="relative flex border border-white/[0.12] rounded-xl p-1.5 bg-white/[0.06] mb-8 overflow-hidden">
-                <div
-                  className="absolute inset-y-1.5 bg-gradient-to-r from-cyan-500/[0.15] to-blue-500/[0.15] border border-cyan-400/30 rounded-lg transition-all duration-300"
-                  style={{
-                    left: authMethod === "passkey" ? "6px" : "50%",
-                    width: "calc(50% - 6px)",
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setAuthMethod("passkey")}
-                  className={`relative flex-1 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-300 ${
-                    authMethod === "passkey"
-                      ? "text-cyan-300"
-                      : "text-white/50 hover:text-white/80"
-                  }`}
-                >
-                  Passkey
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAuthMethod("traditional")}
-                  className={`relative flex-1 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-300 ${
-                    authMethod === "traditional"
-                      ? "text-cyan-300"
-                      : "text-white/50 hover:text-white/80"
-                  }`}
-                >
-                  Traditional
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handlePasskeySignUp} className="space-y-6">
                 <div>
                   <label className="block text-white/80 mb-3 text-sm font-semibold">
                     Username
@@ -211,9 +147,7 @@ export default function SignUpPage() {
                     <>
                       <div className="w-5 h-5 border-2 border-cyan-300/30 border-t-cyan-300 rounded-full animate-spin" />
                       <span className="relative z-10">
-                        {authMethod === "passkey"
-                          ? "Creating your account..."
-                          : "Setting things up..."}
+                        Creating your account...
                       </span>
                     </>
                   ) : (
@@ -222,11 +156,7 @@ export default function SignUpPage() {
                         className="w-5 h-5 relative z-10 group-hover/btn:scale-110 transition-transform duration-300"
                         strokeWidth={2.5}
                       />
-                      <span className="relative z-10">
-                        {authMethod === "passkey"
-                          ? "Create with Passkey"
-                          : "Create Account"}
-                      </span>
+                      <span className="relative z-10">Create with Passkey</span>
                     </>
                   )}
                 </button>
@@ -244,15 +174,13 @@ export default function SignUpPage() {
                 </p>
               </div>
 
-              {authMethod === "passkey" && (
-                <div className="mt-6 p-5 bg-gradient-to-br from-white/[0.06] to-white/[0.03] rounded-xl border border-white/12">
-                  <p className="text-white/60 text-xs text-center leading-relaxed">
-                    Passkey authentication uses your device&apos;s biometrics
-                    like Face ID or fingerprint. No passwords to remember, just
-                    secure and seamless access.
-                  </p>
-                </div>
-              )}
+              <div className="mt-6 p-5 bg-gradient-to-br from-white/[0.06] to-white/[0.03] rounded-xl border border-white/12">
+                <p className="text-white/60 text-xs text-center leading-relaxed">
+                  Passkey authentication uses your device&apos;s biometrics like
+                  Face ID or fingerprint. No passwords to remember, just secure
+                  and seamless access.
+                </p>
+              </div>
             </div>
           </div>
         </div>

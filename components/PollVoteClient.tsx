@@ -203,11 +203,6 @@ export default function PollVoteClient({
     <div className="space-y-5">
       <div className="flex flex-wrap justify-between items-center gap-4 mb-3">
         <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2 text-white/70">
-            <Users className="w-4 h-4" strokeWidth={1.5} />
-            <span className="font-semibold">{totalVotes.toLocaleString()}</span>
-            <span className="text-white/50 text-sm">votes</span>
-          </div>
           <div className="flex items-center gap-2.5">
             <div className="relative">
               <div
@@ -234,7 +229,9 @@ export default function PollVoteClient({
         {!closed && (
           <div className="flex items-center gap-2 px-3 py-1.5 bg-linear-to-r from-emerald-500/15 to-green-500/15 border border-emerald-400/30 rounded-full">
             <TrendingUp className="w-3 h-3 text-emerald-400" strokeWidth={2} />
-            <span className="text-xs text-emerald-300 font-bold">Live</span>
+            <span className="text-xs text-emerald-300 font-bold">
+              This Poll is Currently live !!!! VOTE NOW
+            </span>
           </div>
         )}
       </div>

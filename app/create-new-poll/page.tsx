@@ -97,10 +97,10 @@ export default function CreateNewPollPage() {
 
   return (
     <div className="min-h-screen bg-[#175588] relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.03] via-transparent to-violet-500/[0.03]" />
-      <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-400/[0.08] rounded-full blur-3xl animate-pulse" />
+      <div className="absolute inset-0 bg-linear-to-br from-cyan-500/3 via-transparent to-violet-500/3" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-400/8 rounded-full blur-3xl animate-pulse" />
       <div
-        className="absolute bottom-0 left-0 w-96 h-96 bg-violet-400/[0.08] rounded-full blur-3xl animate-pulse"
+        className="absolute bottom-0 left-0 w-96 h-96 bg-violet-400/8 rounded-full blur-3xl animate-pulse"
         style={{ animationDelay: "1s" }}
       />
 

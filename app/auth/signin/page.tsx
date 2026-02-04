@@ -6,18 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { signinWithPasskey } from "@/app/lib/webauthn";
-import { loginUser } from "@/app/lib/jwt";
 import Link from "next/link";
 import { ArrowLeft, LogIn, Sparkles } from "lucide-react";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function SigninPage() {
   const router = useRouter();
+  const { checkAuth } = useAuth();
   const [username, setUsername] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
-  const [authMethod, setAuthMethod] = useState<"passkey" | "traditional">(
-    "passkey",
-  );
 
   async function handlePasskeySignin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -32,27 +30,7 @@ export default function SigninPage() {
         res.message || res.status || "Authentication successful!";
       setStatus(`✅ ${successMessage}`);
 
-      setTimeout(() => {
-        router.push("/polls");
-      }, 1000);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      setStatus(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleTraditionalSignin(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!username) return setStatus("Username required");
-
-    try {
-      setLoading(true);
-      setStatus("Authenticating…");
-      const res = await loginUser(username);
-
-      setStatus(`✅ Authentication successful! Welcome ${res.username}`);
+      await checkAuth();
 
       setTimeout(() => {
         router.push("/polls");
@@ -104,46 +82,7 @@ export default function SigninPage() {
               </p>
             </div>
 
-            <div className="relative flex border border-white/[0.12] rounded-xl p-1.5 bg-white/[0.06] mb-8 overflow-hidden">
-              <div
-                className="absolute inset-y-1.5 bg-gradient-to-r from-cyan-500/[0.15] to-blue-500/[0.15] border border-cyan-400/30 rounded-lg transition-all duration-300"
-                style={{
-                  left: authMethod === "passkey" ? "6px" : "50%",
-                  width: "calc(50% - 6px)",
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => setAuthMethod("passkey")}
-                className={`relative flex-1 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-300 ${
-                  authMethod === "passkey"
-                    ? "text-cyan-300"
-                    : "text-white/50 hover:text-white/80"
-                }`}
-              >
-                Passkey
-              </button>
-              <button
-                type="button"
-                onClick={() => setAuthMethod("traditional")}
-                className={`relative flex-1 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-300 ${
-                  authMethod === "traditional"
-                    ? "text-cyan-300"
-                    : "text-white/50 hover:text-white/80"
-                }`}
-              >
-                Traditional
-              </button>
-            </div>
-
-            <form
-              className="space-y-6"
-              onSubmit={
-                authMethod === "passkey"
-                  ? handlePasskeySignin
-                  : handleTraditionalSignin
-              }
-            >
+            <form className="space-y-6" onSubmit={handlePasskeySignin}>
               <LabelInputContainer>
                 <Label
                   htmlFor="username"
@@ -172,9 +111,7 @@ export default function SigninPage() {
                   {loading ? (
                     <>
                       <div className="w-4 h-4 border-2 border-cyan-300/30 border-t-cyan-300 rounded-full animate-spin" />
-                      {authMethod === "passkey"
-                        ? "Verifying..."
-                        : "Signing in..."}
+                      Verifying...
                     </>
                   ) : (
                     <>
@@ -182,9 +119,7 @@ export default function SigninPage() {
                         className="w-4 h-4 group-hover/btn:rotate-12 transition-transform duration-300"
                         strokeWidth={2.5}
                       />
-                      {authMethod === "passkey"
-                        ? "Sign in with Passkey"
-                        : "Sign in"}
+                      Sign in with Passkey
                     </>
                   )}
                 </span>
