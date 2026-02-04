@@ -80,24 +80,43 @@ export default function PollsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#175588] relative overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-cyan-500/5 via-transparent to-violet-500/5" />
+        <div className="fixed inset-0 z-0 opacity-20">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+              linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+              linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)
+            `,
+              backgroundSize: "40px 40px",
+            }}
+          />
+        </div>
+
+        <div className="absolute inset-0 z-10 bg-linear-to-b from-[#0a1e33] via-[#081525] to-[#050f1a]" />
         <NavbarDemo />
-        <div className="pt-32 pb-12 px-4 relative z-10">
+
+        <div className="relative z-20 pt-32 pb-12 px-4">
           <div className="max-w-6xl mx-auto text-center">
             <div className="relative w-20 h-20 mx-auto mb-8">
-              <div className="absolute inset-0 border-4 border-white/10 rounded-full" />
-              <div className="absolute inset-0 border-4 border-transparent border-t-cyan-400 rounded-full animate-spin" />
+              <div className="absolute inset-0 border-2 border-cyan-500/20 rounded-lg" />
+              <div className="absolute inset-2 border-2 border-cyan-500/30 rounded-lg" />
+              <div className="absolute inset-0 border-2 border-transparent border-t-cyan-500 rounded-lg animate-spin" />
               <div
-                className="absolute inset-2 border-4 border-transparent border-t-violet-400 rounded-full animate-spin"
-                style={{
-                  animationDirection: "reverse",
-                  animationDuration: "1.5s",
-                }}
+                className="absolute inset-2 border-2 border-transparent border-t-purple-500 rounded-lg animate-spin"
+                style={{ animationDirection: "reverse" }}
               />
             </div>
-            <p className="text-white/70 text-lg font-medium">
-              Loading the good stuff...
-            </p>
+
+            <div className="space-y-3">
+              <p className="text-cyan-300 font-mono text-sm tracking-widest">
+                SYSTEM_INITIALIZING
+              </p>
+              <div className="w-48 h-px bg-linear-to-r from-transparent via-cyan-500 to-transparent mx-auto" />
+              <p className="text-white/60 font-medium">
+                Loading polling interface...
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -107,36 +126,49 @@ export default function PollsPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-[#175588] relative overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-rose-500/5 via-transparent to-red-500/5" />
+        <div className="fixed inset-0 z-0 opacity-25">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+              linear-gradient(90deg, rgba(255,50,50,0.05) 1px, transparent 1px),
+              linear-gradient(rgba(255,50,50,0.05) 1px, transparent 1px)
+            `,
+              backgroundSize: "30px 30px",
+            }}
+          />
+        </div>
+
+        <div className="absolute inset-0 z-10 bg-linear-to-b from-[#1a0a1a] via-[#0f050f] to-[#0a050a]" />
         <NavbarDemo />
-        <div className="pt-32 pb-12 px-4 relative z-10">
+
+        <div className="relative z-20 pt-32 pb-12 px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="relative bg-linear-to-br from-rose-500/12 to-red-500/8 border border-rose-400/30 rounded-2xl p-12 text-center overflow-hidden group">
-              <div className="absolute inset-0 bg-linear-to-tr from-rose-400/3 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-rose-500/20 border border-rose-400/30 flex items-center justify-center">
-                  <svg
-                    className="w-8 h-8 text-rose-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                    />
-                  </svg>
+            <div className="relative bg-gray-900/80 backdrop-blur-sm border border-red-500/30 rounded-lg p-8 overflow-hidden group">
+              <div className="absolute top-2 left-2 w-3 h-3 border-t border-l border-red-500/60" />
+              <div className="absolute top-2 right-2 w-3 h-3 border-t border-r border-red-500/60" />
+              <div className="absolute bottom-2 left-2 w-3 h-3 border-b border-l border-red-500/60" />
+              <div className="absolute bottom-2 right-2 w-3 h-3 border-b border-r border-red-500/60" />
+
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+                  <div className="relative">
+                    <div className="w-8 h-8 border-2 border-red-500 rounded" />
+                    <div className="absolute top-1/2 left-1/2 w-4 h-0.5 bg-red-500 transform -translate-x-1/2 -translate-y-1/2 rotate-45" />
+                    <div className="absolute top-1/2 left-1/2 w-4 h-0.5 bg-red-500 transform -translate-x-1/2 -translate-y-1/2 -rotate-45" />
+                  </div>
                 </div>
-                <p className="text-rose-300 mb-6 text-lg font-medium">
-                  Oops! Something went wrong
-                </p>
-                <p className="text-rose-300/70 mb-8 text-sm">{error}</p>
+
+                <p className="text-red-400 font-mono mb-4">SYSTEM_ERROR</p>
+                <p className="text-white/80 mb-6 text-lg">{error}</p>
+
                 <button
                   onClick={() => window.location.reload()}
-                  className="px-6 py-3 bg-white/8 hover:bg-white/12 border border-white/20 hover:border-white/30 rounded-full text-white font-medium transition-all duration-300 hover:scale-105 inline-flex items-center gap-2"
+                  className="px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-600 hover:border-gray-500 rounded-lg text-white font-medium transition-all duration-300 inline-flex items-center gap-2 group/btn"
                 >
+                  <span className="group-hover/btn:translate-x-1 transition-transform">
+                    RETRY_CONNECTION
+                  </span>
                   <svg
                     className="w-4 h-4"
                     fill="none"
@@ -144,13 +176,12 @@ export default function PollsPage() {
                     viewBox="0 0 24 24"
                   >
                     <path
-                      strokeLinecap="round"
+                      strokeLinecap="square"
                       strokeLinejoin="round"
-                      strokeWidth="2"
+                      strokeWidth={2}
                       d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                     />
                   </svg>
-                  Try Again
                 </button>
               </div>
             </div>
@@ -162,42 +193,64 @@ export default function PollsPage() {
 
   return (
     <div className="min-h-screen bg-[#175588] relative overflow-hidden">
-      <div className="absolute inset-0 bg-linear-to-br from-cyan-500/3 via-transparent to-violet-500/3" />
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" />
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-linear-to-b from-[#0a1e33] via-[#081525] to-[#050f1a]" />
         <div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "1s" }}
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `
+            linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+            linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)
+          `,
+            backgroundSize: "50px 50px",
+          }}
         />
       </div>
+
+      <div
+        className="fixed inset-0 z-0 opacity-5"
+        style={{
+          background: `repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 2px,
+          rgba(100, 200, 255, 0.1) 2px,
+          rgba(100, 200, 255, 0.1) 4px
+        )`,
+        }}
+      />
+
       <NavbarDemo />
 
-      <div className="pt-32 pb-12 px-4 relative z-10">
+      <div className="relative z-10 pt-32 pb-12 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12">
-            <div className="space-y-3">
+            <div className="space-y-4">
               <button
                 onClick={() => router.push("/")}
-                className="group inline-flex items-center gap-2 text-white/50 hover:text-white/90 transition-all duration-300 mb-2"
+                className="group inline-flex items-center gap-2 text-gray-400 hover:text-cyan-300 transition-all duration-300 font-mono text-sm"
               >
                 <ArrowLeft
-                  className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300"
+                  className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform"
                   strokeWidth={2}
                 />
-                <span className="text-sm font-medium">Back</span>
+                <span>BACK_TO_TERMINAL</span>
               </button>
+
               <div>
-                <h1 className="text-5xl text-white font-bold tracking-tight mb-2">
-                  Live Polls
+                <h1 className="text-4xl md:text-5xl text-white font-bold tracking-tighter mb-3">
+                  <span className="text-cyan-400">POLL</span>
+                  <span className="text-gray-300">_INTERFACE</span>
                 </h1>
-                <p className="text-white/60 text-lg font-light">
-                  Real-time voting, powered by the community
+                <p className="text-gray-400 font-mono text-sm tracking-wide">
+                  LIVE_DATA_STREAM // ACTIVE_NODES: {polls.length}
                 </p>
               </div>
             </div>
+
             <Link
               href="/create-new-poll"
-              className="group relative px-6 py-3.5 bg-linear-to-r from-cyan-500/15 to-blue-500/15 hover:from-cyan-500/22 hover:to-blue-500/22 border border-cyan-400/40 hover:border-cyan-400/60 rounded-full text-cyan-300 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/20 flex items-center gap-2.5 overflow-hidden"
+              className="group relative px-6 py-3 bg-gray-900/80 border border-cyan-500/40 hover:border-cyan-500 rounded-lg text-cyan-300 font-mono text-sm transition-all duration-300 hover:scale-105 flex items-center gap-2.5 overflow-hidden"
             >
               <div className="absolute inset-0 bg-linear-to-r from-cyan-400/0 via-cyan-400/10 to-cyan-400/0 translate-x-full group-hover:translate-x-full transition-transform duration-700" />
               <Plus

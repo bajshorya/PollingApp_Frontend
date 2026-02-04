@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Users, TrendingUp, CheckCircle } from "lucide-react";
+import { Users, CheckCircle } from "lucide-react";
 
 interface BackendOption {
   id: string;
@@ -206,31 +206,29 @@ export default function PollVoteClient({
           <div className="flex items-center gap-2.5">
             <div className="relative">
               <div
-                className={`w-2 h-2 rounded-full transition-all duration-500 ${
+                className={`w-2 h-2 rounded transition-all duration-500 ${
                   connectionStatus === "connected"
-                    ? "bg-emerald-400 shadow-lg shadow-emerald-400/50"
+                    ? "bg-cyan-400"
                     : connectionStatus === "connecting"
                       ? "bg-yellow-400"
-                      : "bg-slate-400"
+                      : "bg-gray-500"
                 }`}
               />
               {connectionStatus === "connected" && (
                 <>
-                  <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-40" />
-                  <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-pulse opacity-60" />
+                  <div className="absolute inset-0 w-2 h-2 rounded bg-cyan-400 animate-ping opacity-40" />
                 </>
               )}
             </div>
-            <span className="text-xs text-white/50 font-medium">
-              {connectionStatus}
+            <span className="text-xs text-gray-400 font-mono">
+              {connectionStatus.toUpperCase()}
             </span>
           </div>
         </div>
         {!closed && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-linear-to-r from-emerald-500/15 to-green-500/15 border border-emerald-400/30 rounded-full">
-            <TrendingUp className="w-3 h-3 text-emerald-400" strokeWidth={2} />
-            <span className="text-xs text-emerald-300 font-bold">
-              This Poll is Currently live !!!! VOTE NOW
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-900/30 border border-green-500/40 rounded">
+            <span className="text-xs text-green-400 font-mono">
+              LIVE_VOTING_ACTIVE
             </span>
           </div>
         )}
@@ -245,45 +243,38 @@ export default function PollVoteClient({
             key={option.id}
             disabled={closed || voted || loading}
             onClick={() => castVote(option.id)}
-            className={`group relative w-full text-left rounded-2xl border px-6 py-5 transition-all duration-500 overflow-hidden
+            className={`group relative w-full text-left rounded-lg border px-6 py-4 transition-all duration-300 overflow-hidden font-mono
               ${
                 closed
-                  ? "opacity-60 cursor-not-allowed border-white/8 bg-white/2"
+                  ? "opacity-60 cursor-not-allowed border-gray-700 bg-gray-800/30"
                   : voted
-                    ? "cursor-not-allowed border-white/12 bg-white/4"
-                    : "hover:border-cyan-400/40 hover:bg-white/8 hover:scale-[1.02] border-white/15 bg-white/4 hover:shadow-lg hover:shadow-cyan-500/10"
-              }
-              ${
-                voted && !closed
-                  ? "cursor-default hover:border-white/12 hover:bg-white/4 hover:scale-100 hover:shadow-none"
-                  : ""
+                    ? "cursor-not-allowed border-gray-600 bg-gray-800/50"
+                    : "hover:border-cyan-500/40 hover:bg-gray-800/70 border-gray-600 bg-gray-800/50"
               }`}
           >
             <div
-              className={`absolute inset-y-0 left-0 rounded-2xl transition-all duration-700 ease-out ${
-                percent > 0
-                  ? "bg-linear-to-r from-cyan-500/15 to-blue-500/12"
-                  : "bg-transparent"
+              className={`absolute inset-y-0 left-0 rounded-lg transition-all duration-500 ${
+                percent > 0 ? "bg-cyan-900/20" : "bg-transparent"
               }`}
               style={{ width: `${percent}%` }}
             />
 
             <div className="relative flex justify-between items-center gap-4">
-              <span className="text-white font-semibold text-base flex-1">
+              <span className="text-white font-mono text-sm flex-1">
                 {option.text || "Unnamed option"}
               </span>
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-white/70">
+                <div className="flex items-center gap-2 text-gray-400">
                   <Users className="w-4 h-4" strokeWidth={1.5} />
-                  <span className="font-semibold text-sm">
+                  <span className="font-mono text-sm">
                     {option.votes.toLocaleString()}
                   </span>
                 </div>
                 <div
-                  className={`px-3 py-1.5 rounded-lg text-sm font-bold min-w-16 text-center transition-all duration-300 ${
+                  className={`px-3 py-1 rounded text-sm font-mono min-w-16 text-center ${
                     percent > 0
-                      ? "bg-linear-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-cyan-300"
-                      : "bg-white/8 text-white/60"
+                      ? "bg-cyan-900/30 border border-cyan-500/30 text-cyan-400"
+                      : "bg-gray-700 text-gray-400"
                   }`}
                 >
                   {percent}%
@@ -296,39 +287,35 @@ export default function PollVoteClient({
 
       <div className="pt-4 space-y-3">
         {error && (
-          <div className="p-4 bg-linear-to-r from-rose-500/12 to-red-500/12 border border-rose-400/30 rounded-xl">
-            <p className="text-rose-300 font-medium text-sm">{error}</p>
+          <div className="p-4 bg-red-900/30 border border-red-500/40 rounded-lg">
+            <p className="text-red-400 font-mono text-sm">{error}</p>
           </div>
         )}
         {voted && !error && (
-          <div className="p-4 bg-linear-to-r from-emerald-500/12 to-green-500/12 border border-emerald-400/30 rounded-xl">
-            <div className="flex items-center gap-2.5 text-emerald-300">
-              <CheckCircle className="w-4 h-4 shrink-0" strokeWidth={2} />
-              <p className="font-medium text-sm">
-                Your vote has been recorded!
-              </p>
+          <div className="p-4 bg-green-900/30 border border-green-500/40 rounded-lg">
+            <div className="flex items-center gap-2.5 text-green-400 font-mono text-sm">
+              <CheckCircle className="w-4 h-4" strokeWidth={2} />
+              <span>VOTE_RECORDED_SUCCESSFULLY</span>
             </div>
           </div>
         )}
         {closed && (
-          <div className="p-4 bg-linear-to-r from-rose-500/12 to-red-500/12 border border-rose-400/30 rounded-xl">
-            <p className="text-rose-300 font-medium text-sm">
-              This poll is now closed
-            </p>
+          <div className="p-4 bg-red-900/30 border border-red-500/40 rounded-lg">
+            <p className="text-red-400 font-mono text-sm">VOTING_TERMINATED</p>
           </div>
         )}
         {!closed && !voted && !loading && !error && (
-          <div className="p-4 bg-linear-to-r from-cyan-500/8 to-blue-500/8 border border-cyan-400/25 rounded-xl">
-            <p className="text-cyan-300 font-medium text-sm">
-              Click an option to cast your vote
+          <div className="p-4 bg-cyan-900/20 border border-cyan-500/30 rounded-lg">
+            <p className="text-cyan-400 font-mono text-sm">
+              SELECT_OPTION_TO_VOTE
             </p>
           </div>
         )}
         {loading && (
-          <div className="p-4 bg-linear-to-r from-yellow-500/12 to-amber-500/12 border border-yellow-400/30 rounded-xl">
-            <div className="flex items-center gap-2.5 text-yellow-300">
-              <div className="w-4 h-4 border-2 border-yellow-300/30 border-t-yellow-300 rounded-full animate-spin" />
-              <p className="font-medium text-sm">Submitting your vote...</p>
+          <div className="p-4 bg-yellow-900/30 border border-yellow-500/40 rounded-lg">
+            <div className="flex items-center gap-2.5 text-yellow-400 font-mono text-sm">
+              <div className="w-4 h-4 border-2 border-yellow-400/30 border-t-yellow-400 rounded-full animate-spin" />
+              <span>PROCESSING_VOTE...</span>
             </div>
           </div>
         )}

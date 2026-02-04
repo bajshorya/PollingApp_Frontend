@@ -34,22 +34,6 @@ export default function PollPage() {
   const params = useParams();
   const router = useRouter();
 
-  useEffect(() => {
-    console.log("🔍 Route params:", params);
-    console.log("🔍 Type of params:", typeof params);
-    console.log("🔍 Params keys:", Object.keys(params));
-
-    console.log("🔍 params.pollId:", params.pollId);
-    console.log("🔍 params.poll_id:", params.poll_id);
-
-    if (typeof window !== "undefined") {
-      console.log("🔍 Current URL:", window.location.href);
-      console.log("🔍 Current path:", window.location.pathname);
-      const idFromPath = window.location.pathname.split("/").pop();
-      console.log("🔍 ID from path:", idFromPath);
-    }
-  }, [params]);
-
   const getPollId = () => {
     const id = params.pollId || params.poll_id;
 
@@ -70,7 +54,6 @@ export default function PollPage() {
   };
 
   const pollId = getPollId();
-  console.log("✅ Final pollId:", pollId);
 
   const [poll, setPoll] = useState<Poll | null>(null);
   const [loading, setLoading] = useState(true);
@@ -170,6 +153,7 @@ export default function PollPage() {
     if (pollId) {
       fetchPoll();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pollId, router]);
 
   const handleClosePoll = async () => {
@@ -253,23 +237,41 @@ export default function PollPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#175588] relative overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-cyan-500/[0.03] via-transparent to-violet-500/[0.03]" />
+        <div className="fixed inset-0 z-0 opacity-20">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+              linear-gradient(90deg, rgba(100, 200, 255, 0.03) 1px, transparent 1px),
+              linear-gradient(rgba(100, 200, 255, 0.03) 1px, transparent 1px)
+            `,
+              backgroundSize: "60px 60px",
+            }}
+          />
+        </div>
+
+        <div className="absolute inset-0 z-10 bg-linear-to-b from-[#0a1a2a] via-[#081220] to-[#050a15]" />
         <NavbarDemo />
-        <div className="pt-32 pb-12 px-4 relative z-10">
+
+        <div className="relative z-20 pt-32 pb-12 px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="relative w-20 h-20 mx-auto mb-8">
-              <div className="absolute inset-0 border-4 border-white/10 rounded-full" />
-              <div className="absolute inset-0 border-4 border-transparent border-t-cyan-400 rounded-full animate-spin" />
+            <div className="mb-8 font-mono text-sm text-cyan-400 tracking-wider">
+              <div className="animate-pulse">LOADING_POLL_DATA...</div>
+              <div className="text-gray-500 mt-2">ID: {pollId}</div>
+            </div>
+
+            <div className="relative w-24 h-24 mx-auto mb-8">
+              <div className="absolute inset-0 border-2 border-gray-700 rounded-lg" />
+              <div className="absolute inset-2 border-2 border-cyan-500/30 rounded-lg" />
+              <div className="absolute inset-0 border-2 border-transparent border-t-cyan-500 rounded-lg animate-spin" />
               <div
-                className="absolute inset-2 border-4 border-transparent border-t-violet-400 rounded-full animate-spin"
-                style={{
-                  animationDirection: "reverse",
-                  animationDuration: "1.5s",
-                }}
+                className="absolute inset-2 border-2 border-transparent border-t-purple-500 rounded-lg animate-spin"
+                style={{ animationDirection: "reverse" }}
               />
             </div>
-            <p className="text-white/70 text-lg font-medium">
-              Loading poll details...
+
+            <p className="text-gray-400 font-mono text-sm">
+              QUERYING_DATABASE...
             </p>
           </div>
         </div>
@@ -280,35 +282,56 @@ export default function PollPage() {
   if (error || !poll) {
     return (
       <div className="min-h-screen bg-[#175588] relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-rose-500/[0.03] via-transparent to-red-500/[0.03]" />
+        <div className="fixed inset-0 z-0 opacity-25">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+              linear-gradient(90deg, rgba(255, 0, 0, 0.03) 1px, transparent 1px),
+              linear-gradient(rgba(255, 0, 0, 0.03) 1px, transparent 1px)
+            `,
+              backgroundSize: "40px 40px",
+            }}
+          />
+        </div>
+
+        <div className="absolute inset-0 z-10 bg-linear-to-b from-[#1a0a0a] via-[#0f0505] to-[#0a0202]" />
         <NavbarDemo />
-        <div className="pt-32 pb-12 px-4 relative z-10">
+
+        <div className="relative z-20 pt-32 pb-12 px-4">
           <div className="max-w-3xl mx-auto">
-            <div className="relative bg-gradient-to-br from-rose-500/[0.12] to-red-500/[0.08] border border-rose-400/30 rounded-2xl p-12 text-center overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-tr from-rose-400/[0.03] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-rose-500/20 border border-rose-400/30 flex items-center justify-center">
-                  <XCircle
-                    className="w-8 h-8 text-rose-300"
-                    strokeWidth={1.5}
-                  />
+            <div className="relative bg-gray-900/90 backdrop-blur-sm border border-red-500/40 rounded-lg p-8 overflow-hidden">
+              <div className="absolute top-3 left-3 w-2 h-2 border-t border-l border-red-500" />
+              <div className="absolute top-3 right-3 w-2 h-2 border-t border-r border-red-500" />
+              <div className="absolute bottom-3 left-3 w-2 h-2 border-b border-l border-red-500" />
+              <div className="absolute bottom-3 right-3 w-2 h-2 border-b border-r border-red-500" />
+
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-lg bg-red-500/10 border border-red-500/40 flex items-center justify-center">
+                  <div className="relative">
+                    <div className="w-10 h-10 border-2 border-red-500 rotate-45" />
+                    <div className="absolute top-1/2 left-1/2 w-8 h-0.5 bg-red-500 transform -translate-x-1/2 -translate-y-1/2 rotate-45" />
+                    <div className="absolute top-1/2 left-1/2 w-8 h-0.5 bg-red-500 transform -translate-x-1/2 -translate-y-1/2 -rotate-45" />
+                  </div>
                 </div>
-                <p className="text-rose-300 mb-2 text-lg font-medium">
+
+                <p className="text-red-400 font-mono mb-3">ERROR_404</p>
+                <p className="text-gray-300 mb-2 text-lg">
                   {error || "Poll not found"}
                 </p>
-                <p className="text-rose-300/60 text-sm mb-8 font-mono">
-                  Poll ID: {pollId || "Unknown"}
+                <p className="text-gray-500 text-sm mb-8 font-mono">
+                  POLL_ID: {pollId || "UNKNOWN"}
                 </p>
+
                 <Link
                   href="/polls"
-                  className="group/btn relative inline-flex items-center gap-2.5 px-6 py-3 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-white/30 rounded-xl text-white font-medium transition-all duration-300 overflow-hidden hover:scale-105"
+                  className="group inline-flex items-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-600 hover:border-gray-500 rounded-lg text-gray-300 hover:text-white font-medium transition-all duration-300"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/[0.08] to-white/0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
                   <ArrowLeft
-                    className="w-4 h-4 relative z-10"
+                    className="w-4 h-4 group-hover:-translate-x-1 transition-transform"
                     strokeWidth={2}
                   />
-                  <span className="relative z-10">Back to Polls</span>
+                  <span>RETURN_TO_GRID</span>
                 </Link>
               </div>
             </div>
@@ -323,49 +346,64 @@ export default function PollPage() {
 
   return (
     <div className="min-h-screen bg-[#175588] relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.03] via-transparent to-violet-500/[0.03]" />
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/[0.05] rounded-full blur-3xl animate-pulse" />
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-linear-to-b from-[#0a1e33] via-[#081525] to-[#050f1a]" />
         <div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/[0.05] rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "1s" }}
+          className="absolute inset-0 opacity-15"
+          style={{
+            backgroundImage: `
+            linear-gradient(90deg, rgba(100, 200, 255, 0.05) 1px, transparent 1px),
+            linear-gradient(rgba(100, 200, 255, 0.05) 1px, transparent 1px)
+          `,
+            backgroundSize: "50px 50px",
+          }}
         />
       </div>
+
+      <div
+        className="fixed inset-0 z-0 opacity-10"
+        style={{
+          background: `repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 1px,
+          rgba(100, 200, 255, 0.1) 1px,
+          rgba(100, 200, 255, 0.1) 2px
+        )`,
+        }}
+      />
+
       <NavbarDemo />
 
-      <div className="pt-32 pb-12 px-4 relative z-10">
+      <div className="relative z-10 pt-32 pb-12 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <Link
               href="/polls"
-              className="group inline-flex items-center gap-2 text-white/50 hover:text-white/90 transition-colors duration-300"
+              className="group inline-flex items-center gap-2 text-gray-400 hover:text-cyan-300 transition-colors duration-300 font-mono text-sm"
             >
               <ArrowLeft
-                className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300"
+                className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform"
                 strokeWidth={2}
               />
-              <span className="font-medium">Back to Polls</span>
+              <span>BACK_TO_GRID</span>
             </Link>
 
             {isCreator && !poll.closed && (
               <button
                 onClick={handleClosePoll}
                 disabled={closing}
-                className="group/btn relative inline-flex items-center gap-2.5 px-5 py-2.5 bg-gradient-to-r from-rose-500/[0.18] to-red-500/[0.18] hover:from-rose-500/[0.25] hover:to-red-500/[0.25] border border-rose-400/40 hover:border-rose-400/60 rounded-xl text-rose-300 font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden hover:scale-105 hover:shadow-lg hover:shadow-rose-500/20"
+                className="group relative inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900/80 hover:bg-red-900/30 border border-red-500/40 hover:border-red-500 rounded-lg text-red-400 hover:text-red-300 font-mono text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-rose-400/0 via-rose-400/10 to-rose-400/0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
                 {closing ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-rose-300/30 border-t-rose-300 rounded-full animate-spin relative z-10" />
-                    <span className="relative z-10">Closing...</span>
+                    <div className="w-3.5 h-3.5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                    <span>TERMINATING...</span>
                   </>
                 ) : (
                   <>
-                    <XCircle
-                      className="w-4 h-4 relative z-10"
-                      strokeWidth={2}
-                    />
-                    <span className="relative z-10">Close Poll</span>
+                    <XCircle className="w-3.5 h-3.5" strokeWidth={2} />
+                    <span>TERMINATE_POLL</span>
                   </>
                 )}
               </button>
@@ -373,149 +411,115 @@ export default function PollPage() {
           </div>
 
           {closeSuccess && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-emerald-500/[0.12] to-green-500/[0.12] border border-emerald-400/30 rounded-xl animate-slideDown">
-              <div className="flex items-center gap-2.5 text-emerald-300">
-                <CheckCircle
-                  className="w-4 h-4 flex-shrink-0"
-                  strokeWidth={2}
-                />
-                <p className="text-sm font-medium">Poll closed successfully!</p>
+            <div className="mb-6 p-4 bg-green-900/30 border border-green-500/40 rounded-lg">
+              <div className="flex items-center gap-2 text-green-400 font-mono text-sm">
+                <CheckCircle className="w-4 h-4" strokeWidth={2} />
+                <span>POLL_TERMINATED_SUCCESSFULLY</span>
               </div>
             </div>
           )}
 
           {closeError && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-rose-500/[0.12] to-red-500/[0.12] border border-rose-400/30 rounded-xl animate-shake">
-              <div className="flex items-center gap-2.5 text-rose-300">
-                <XCircle className="w-4 h-4 flex-shrink-0" strokeWidth={2} />
-                <p className="text-sm font-medium">{closeError}</p>
+            <div className="mb-6 p-4 bg-red-900/30 border border-red-500/40 rounded-lg">
+              <div className="flex items-center gap-2 text-red-400 font-mono text-sm">
+                <XCircle className="w-4 h-4" strokeWidth={2} />
+                <span>{closeError}</span>
               </div>
             </div>
           )}
 
-          <div className="relative bg-gradient-to-br from-white/[0.12] to-white/[0.06] backdrop-blur-xl rounded-3xl p-8 border border-white/[0.15] shadow-2xl mb-8 overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.03] via-transparent to-violet-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <div className="relative bg-gray-900/80 backdrop-blur-sm border border-gray-700 rounded-lg p-8 mb-8 overflow-hidden">
+            <div className="absolute top-4 left-4 w-3 h-3 border-t border-l border-cyan-500/60" />
+            <div className="absolute top-4 right-4 w-3 h-3 border-t border-r border-cyan-500/60" />
+            <div className="absolute bottom-4 left-4 w-3 h-3 border-b border-l border-cyan-500/60" />
+            <div className="absolute bottom-4 right-4 w-3 h-3 border-b border-r border-cyan-500/60" />
 
-            <div className="relative">
-              <div className="flex items-start justify-between mb-6 gap-6">
-                <div className="flex-1">
-                  <h1 className="text-3xl text-white font-bold tracking-tight mb-4">
-                    {poll.title}
-                  </h1>
-                  {poll.description && (
-                    <p className="text-white/70 leading-relaxed">
-                      {poll.description}
-                    </p>
-                  )}
-                </div>
-                <div
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border ${
-                    poll.closed
-                      ? "bg-gradient-to-r from-rose-500/[0.15] to-red-500/[0.15] border-rose-400/30 text-rose-300"
-                      : "bg-gradient-to-r from-emerald-500/[0.15] to-green-500/[0.15] border-emerald-400/30 text-emerald-300"
-                  }`}
-                >
-                  {poll.closed ? (
-                    <>
-                      <Lock className="w-4 h-4" strokeWidth={2} />
-                      Closed
-                    </>
-                  ) : (
-                    <>
-                      <Circle className="w-3 h-3 fill-emerald-400 animate-pulse" />
-                      Live
-                    </>
-                  )}
-                </div>
+            <div className="flex items-start justify-between mb-8 gap-6">
+              <div className="flex-1">
+                <h1 className="text-2xl md:text-3xl text-white font-bold tracking-tight mb-4 font-mono">
+                  {poll.title}
+                </h1>
+                {poll.description && (
+                  <p className="text-gray-400 leading-relaxed text-sm">
+                    {poll.description}
+                  </p>
+                )}
               </div>
 
-              {isCreator && (
-                <div className="mb-6 p-4 bg-gradient-to-r from-cyan-500/[0.12] to-blue-500/[0.12] border border-cyan-400/30 rounded-xl">
-                  <div className="flex items-center gap-2.5 text-cyan-300">
-                    <Crown className="w-4 h-4 flex-shrink-0" strokeWidth={2} />
-                    <p className="text-sm font-bold">You created this poll</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex flex-wrap items-center gap-6 text-white/60 text-sm mb-8">
-                <div className="flex items-center gap-2.5">
-                  <Users className="w-4 h-4" strokeWidth={1.5} />
-                  <span className="font-semibold text-white/80">
-                    {totalVotes.toLocaleString()}
-                  </span>
-                  <span>total votes</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <Clock className="w-4 h-4" strokeWidth={1.5} />
-                  <span>{formatDate(poll.created_at)}</span>
-                </div>
-              </div>
-
-              <div className="border-t border-white/[0.1] pt-8">
-                {poll.options && poll.options.length > 0 ? (
-                  <PollVoteClient
-                    pollId={poll.id}
-                    options={poll.options}
-                    closed={poll.closed}
-                    userVoted={poll.user_voted}
-                  />
+              <div
+                className={`flex items-center gap-2 px-3 py-1.5 rounded border text-sm font-mono ${
+                  poll.closed
+                    ? "bg-red-900/30 border-red-500/40 text-red-400"
+                    : "bg-green-900/30 border-green-500/40 text-green-400"
+                }`}
+              >
+                {poll.closed ? (
+                  <>
+                    <Lock className="w-3.5 h-3.5" strokeWidth={2} />
+                    <span>TERMINATED</span>
+                  </>
                 ) : (
-                  <div className="text-center py-12">
-                    <p className="text-white/60 font-medium">
-                      No options available for this poll
-                    </p>
-                  </div>
+                  <>
+                    <Circle className="w-2 h-2 fill-green-400" />
+                    <span>ACTIVE</span>
+                  </>
                 )}
               </div>
             </div>
+
+            {isCreator && (
+              <div className="mb-6 p-3 bg-cyan-900/30 border border-cyan-500/40 rounded-lg">
+                <div className="flex items-center gap-2 text-cyan-400 font-mono text-sm">
+                  <Crown className="w-4 h-4" strokeWidth={2} />
+                  <span>SYSTEM_ADMINISTRATOR</span>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center gap-6 text-gray-400 text-sm mb-8 font-mono">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4" strokeWidth={1.5} />
+                <span className="text-white/80">
+                  {totalVotes.toLocaleString()}
+                </span>
+                <span>VOTES</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4" strokeWidth={1.5} />
+                <span>{formatDate(poll.created_at)}</span>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-700 pt-8">
+              {poll.options && poll.options.length > 0 ? (
+                <PollVoteClient
+                  pollId={poll.id}
+                  options={poll.options}
+                  closed={poll.closed}
+                  userVoted={poll.user_voted}
+                />
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 font-mono">
+                    NO_OPTIONS_AVAILABLE
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="text-center text-white/40 text-sm space-y-1.5">
-            <p className="font-mono">Poll ID: {poll.id}</p>
-            <p className="font-mono">
-              Created by: {poll.creator_id?.substring(0, 8) || "Unknown"}...
-            </p>
+          <div className="text-center text-gray-500 text-xs space-y-1.5 font-mono">
+            <p>POLL_ID: {poll.id}</p>
+            <p>CREATOR_ID: {poll.creator_id?.substring(0, 8)}...</p>
             {isCreator && (
-              <div className="flex items-center justify-center gap-2 text-cyan-300 mt-2">
+              <div className="flex items-center justify-center gap-2 text-cyan-400 mt-3">
                 <Crown className="w-3.5 h-3.5" strokeWidth={2} />
-                <p className="text-sm font-semibold">You are the creator</p>
+                <span>ADMINISTRATOR_MODE</span>
               </div>
             )}
           </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          25% {
-            transform: translateX(-4px);
-          }
-          75% {
-            transform: translateX(4px);
-          }
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-        .animate-shake {
-          animation: shake 0.3s ease-in-out;
-        }
-      `}</style>
     </div>
   );
 }
