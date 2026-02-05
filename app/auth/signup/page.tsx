@@ -17,8 +17,19 @@ export default function SignUpPage() {
 
   const handlePasskeySignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!username.trim()) {
       setError("Username is required");
+      return;
+    }
+
+    if (username[0] === " ") {
+      setError("Username cannot start with a space");
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9]/.test(username)) {
+      setError("Username must start with a letter or number");
       return;
     }
 
@@ -28,6 +39,27 @@ export default function SignUpPage() {
 
     try {
       const res = await signupWithPasskey(username.trim());
+
+      if (
+        res.error &&
+        (res.error.toLowerCase().includes("already exists") ||
+          res.error.toLowerCase().includes("already registered"))
+      ) {
+        setError(
+          "Username already exists. Please choose a different username.",
+        );
+        return;
+      }
+
+      if (res.error) {
+        setError(res.error);
+        return;
+      }
+
+      if (!res) {
+        setError("Invalid response from server. Please try again.");
+        return;
+      }
 
       const successMessage =
         res.message || res.status || "Registration successful!";
@@ -41,7 +73,27 @@ export default function SignUpPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error("Registration error:", err);
-      setError(err.message || "Registration failed. Please try again.");
+
+      if (
+        err.message &&
+        (err.message.toLowerCase().includes("already exists") ||
+          err.message.toLowerCase().includes("already registered") ||
+          err.message.toLowerCase().includes("duplicate"))
+      ) {
+        setError(
+          "Username already exists. Please choose a different username.",
+        );
+      } else if (
+        err.message &&
+        (err.message.toLowerCase().includes("network") ||
+          err.message.toLowerCase().includes("fetch"))
+      ) {
+        setError("Network error. Please check your connection and try again.");
+      } else if (err.message && err.message.toLowerCase().includes("timeout")) {
+        setError("Request timed out. Please try again.");
+      } else {
+        setError(err.message || "Registration failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -116,8 +168,7 @@ export default function SignUpPage() {
                 <p className="text-gray-500 text-xs mt-2.5 font-mono">
                   SELECT_UNIQUE_IDENTIFIER
                 </p>
-              </div>
-              ]{" "}
+              </div>{" "}
               {error && (
                 <div className="p-4 bg-red-900/30 border border-red-500/40 rounded-lg">
                   <div className="flex items-center gap-2.5 text-red-400 font-mono text-sm">

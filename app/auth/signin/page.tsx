@@ -19,25 +19,81 @@ export default function SigninPage() {
 
   async function handlePasskeySignin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!username) return setStatus("Username required");
+
+    if (!username.trim()) {
+      setStatus("Username is required");
+      return;
+    }
+
+    if (username[0] === " ") {
+      setStatus("Username cannot start with a space");
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9]/.test(username)) {
+      setStatus("Username must start with a letter or number");
+      return;
+    }
 
     try {
       setLoading(true);
       setStatus("Waiting for passkey…");
       const res = await signinWithPasskey(username);
 
-      const successMessage =
-        res.message || res.status || "Authentication successful!";
-      setStatus(`✅ ${successMessage}`);
+      if (!res) {
+        setStatus("Invalid response from server. Please try again.");
+        return;
+      }
 
-      await checkAuth();
+      if (res.error && res.error.toLowerCase().includes("not found")) {
+        setStatus("Username does not exist. Please check and try again.");
+        return;
+      }
 
-      setTimeout(() => {
-        router.push("/polls");
-      }, 1000);
+      if (res.error && res.error.toLowerCase().includes("authentication")) {
+        setStatus("Authentication failed. Please try again.");
+        return;
+      }
+
+      if (
+        res.error &&
+        (res.error.toLowerCase().includes("passkey") ||
+          res.error.toLowerCase().includes("biometric"))
+      ) {
+        setStatus("Passkey authentication failed. Please try again.");
+        return;
+      }
+
+      if (res.status === "success" || res.message) {
+        const successMessage =
+          res.message || res.status || "Authentication successful!";
+        setStatus(`✅ ${successMessage}`);
+
+        await checkAuth();
+
+        setTimeout(() => {
+          router.push("/polls");
+        }, 1000);
+      } else {
+        setStatus("Unexpected response. Please try again.");
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      setStatus(e.message);
+      if (
+        e.message.toLowerCase().includes("network") ||
+        e.message.toLowerCase().includes("fetch")
+      ) {
+        setStatus("Network error. Please check your connection and try again.");
+      }
+      else if (e.message.toLowerCase().includes("timeout")) {
+        setStatus("Request timed out. Please try again.");
+      }
+      else if (e.message.toLowerCase().includes("not found")) {
+        setStatus("Username does not exist. Please check and try again.");
+      }
+      else {
+        setStatus(e.message || "Authentication failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
