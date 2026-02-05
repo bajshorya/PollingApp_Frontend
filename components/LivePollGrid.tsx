@@ -319,20 +319,7 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
   return (
     <>
       <div className="mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div
-              className={`w-2.5 h-2.5 rounded transition-all duration-500 ${
-                isConnected ? "bg-cyan-400" : "bg-gray-500"
-              }`}
-            />
-            {isConnected && (
-              <>
-                <div className="absolute inset-0 w-2.5 h-2.5 rounded bg-cyan-400 animate-ping opacity-40" />
-              </>
-            )}
-          </div>
-        </div>
+        <div className="flex items-center gap-3"></div>
 
         {newPollCount > 0 && (
           <button
