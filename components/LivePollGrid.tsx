@@ -231,6 +231,22 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
         }
       });
 
+      eventSource.addEventListener("poll_restarted", (event) => {
+        console.log("🔄 Received poll_restarted event");
+        try {
+          const data = JSON.parse(event.data);
+          console.log("Restarted poll data:", data);
+
+          setPolls((prev) =>
+            prev.map((poll) =>
+              poll.id === data.poll_id ? { ...poll, closed: false } : poll,
+            ),
+          );
+        } catch (error) {
+          console.error("❌ Error parsing poll_restarted:", error);
+        }
+      });
+
       eventSource.onerror = (error) => {
         console.error("❌ SSE connection error details:", {
           error,
