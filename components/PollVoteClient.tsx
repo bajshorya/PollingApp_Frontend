@@ -293,27 +293,7 @@ export default function PollVoteClient({
     <div className="space-y-5">
       <div className="flex flex-wrap justify-between items-center gap-4 mb-3">
         <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2.5">
-            <div className="relative">
-              <div
-                className={`w-2 h-2 rounded transition-all duration-500 ${
-                  connectionStatus === "connected"
-                    ? "bg-cyan-400"
-                    : connectionStatus === "connecting"
-                      ? "bg-yellow-400"
-                      : "bg-gray-500"
-                }`}
-              />
-              {connectionStatus === "connected" && (
-                <>
-                  <div className="absolute inset-0 w-2 h-2 rounded bg-cyan-400 animate-ping opacity-40" />
-                </>
-              )}
-            </div>
-            <span className="text-xs text-gray-400 font-mono">
-              {connectionStatus.toUpperCase()}
-            </span>
-          </div>
+          <div className="flex items-center gap-2.5"></div>
         </div>
         {!closed && (
           <div className="flex items-center gap-2 px-3 py-1.5 bg-green-900/30 border border-green-500/40 rounded">

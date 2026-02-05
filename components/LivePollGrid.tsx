@@ -332,9 +332,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
               </>
             )}
           </div>
-          <span className="text-gray-400 text-sm font-mono">
-            {isConnected ? "CONNECTED" : "DISCONNECTED"}
-          </span>
         </div>
 
         {newPollCount > 0 && (
