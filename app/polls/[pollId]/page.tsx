@@ -150,6 +150,35 @@ export default function PollPage() {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    if (!token || !pollId) return;
+
+    console.log("🔗 Setting up SSE listener for poll restart events");
+
+    const eventSource = new EventSource(
+      `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/sse?token=${encodeURIComponent(token)}`,
+    );
+
+    eventSource.addEventListener("poll_restarted", (event) => {
+      console.log("🔄 Received poll_restarted event");
+      try {
+        const data = JSON.parse(event.data);
+        if (data.poll_id === pollId && poll) {
+          console.log("✅ Poll restarted - updating status");
+          setPoll({ ...poll, closed: false });
+        }
+      } catch (error) {
+        console.error("❌ Error parsing poll_restarted:", error);
+      }
+    });
+
+    return () => {
+      console.log("🔌 Cleaning up SSE listener for poll restart");
+      eventSource.close();
+    };
+  }, [pollId, poll]);
+
+  useEffect(() => {
     if (pollId) {
       fetchPoll();
     }
