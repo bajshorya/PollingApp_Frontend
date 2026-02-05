@@ -148,36 +148,99 @@ export default function PollPage() {
       setLoading(false);
     }
   };
+  const handleRestartPoll = async () => {
+    if (!isCreator) return;
 
+    if (
+      !window.confirm(
+        "Are you sure you want to restart this poll? All votes will be reset.",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = getAuthToken();
+      if (!token) throw new Error("Authentication required");
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/restart`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to restart poll");
+      }
+
+      await fetchPoll();
+
+      setCloseSuccess(true);
+      setTimeout(() => {
+        setCloseSuccess(false);
+      }, 3000);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      setCloseError(err.message || "Failed to restart poll");
+      setTimeout(() => {
+        setCloseError(null);
+      }, 3000);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
     if (!token || !pollId) return;
 
-    console.log("🔗 Setting up SSE listener for poll restart events");
+    console.log("🔗 Setting up SSE listener for poll events");
 
     const eventSource = new EventSource(
       `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/sse?token=${encodeURIComponent(token)}`,
     );
 
-    eventSource.addEventListener("poll_restarted", (event) => {
-      console.log("🔄 Received poll_restarted event");
+    eventSource.addEventListener("poll_created", (event) => {
+      console.log("🔄 Received poll_created event (could be restart)");
       try {
         const data = JSON.parse(event.data);
         if (data.poll_id === pollId && poll) {
-          console.log("✅ Poll restarted - updating status");
+          console.log("✅ Poll created/restarted - updating status");
           setPoll({ ...poll, closed: false });
+
+          fetchPoll();
         }
       } catch (error) {
-        console.error("❌ Error parsing poll_restarted:", error);
+        console.error("❌ Error parsing poll_created:", error);
+      }
+    });
+
+    eventSource.addEventListener("poll_closed", (event) => {
+      console.log("🔒 Received poll_closed event");
+      try {
+        const data = JSON.parse(event.data);
+        if (data === pollId || data.poll_id === pollId) {
+          console.log("✅ Poll closed - updating status");
+          if (poll) {
+            setPoll({ ...poll, closed: true });
+          }
+        }
+      } catch (error) {
+        console.error("❌ Error parsing poll_closed:", error);
       }
     });
 
     return () => {
-      console.log("🔌 Cleaning up SSE listener for poll restart");
+      console.log("🔌 Cleaning up SSE listener for poll");
       eventSource.close();
     };
   }, [pollId, poll]);
-
   useEffect(() => {
     if (pollId) {
       fetchPoll();
@@ -418,44 +481,60 @@ export default function PollPage() {
               <span>BACK_TO_GRID</span>
             </Link>
 
-            {isCreator && !poll.closed && (
-              <button
-                onClick={handleClosePoll}
-                disabled={closing}
-                className="group relative inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900/80 hover:bg-red-900/30 border border-red-500/40 hover:border-red-500 rounded-lg text-red-400 hover:text-red-300 font-mono text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {closing ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
-                    <span>TERMINATING...</span>
-                  </>
+            {isCreator && (
+              <div className="flex gap-2">
+                {!poll.closed ? (
+                  <button
+                    onClick={handleClosePoll}
+                    disabled={closing}
+                    className="group relative inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900/80 hover:bg-red-900/30 border border-red-500/40 hover:border-red-500 rounded-lg text-red-400 hover:text-red-300 font-mono text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {closing ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                        <span>TERMINATING...</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-3.5 h-3.5" strokeWidth={2} />
+                        <span>TERMINATE_POLL</span>
+                      </>
+                    )}
+                  </button>
                 ) : (
-                  <>
-                    <XCircle className="w-3.5 h-3.5" strokeWidth={2} />
-                    <span>TERMINATE_POLL</span>
-                  </>
+                  <button
+                    onClick={handleRestartPoll}
+                    disabled={loading}
+                    className="group relative inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900/80 hover:bg-green-900/30 border border-green-500/40 hover:border-green-500 rounded-lg text-green-400 hover:text-green-300 font-mono text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-green-400/30 border-t-green-400 rounded-full animate-spin" />
+                        <span>RESTARTING...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
+                        </svg>
+                        <span>RESTART_POLL</span>
+                      </>
+                    )}
+                  </button>
                 )}
-              </button>
+              </div>
             )}
           </div>
-
-          {closeSuccess && (
-            <div className="mb-6 p-4 bg-green-900/30 border border-green-500/40 rounded-lg">
-              <div className="flex items-center gap-2 text-green-400 font-mono text-sm">
-                <CheckCircle className="w-4 h-4" strokeWidth={2} />
-                <span>POLL_TERMINATED_SUCCESSFULLY</span>
-              </div>
-            </div>
-          )}
-
-          {closeError && (
-            <div className="mb-6 p-4 bg-red-900/30 border border-red-500/40 rounded-lg">
-              <div className="flex items-center gap-2 text-red-400 font-mono text-sm">
-                <XCircle className="w-4 h-4" strokeWidth={2} />
-                <span>{closeError}</span>
-              </div>
-            </div>
-          )}
 
           <div className="relative bg-gray-900/80 backdrop-blur-sm border border-gray-700 rounded-lg p-8 mb-8 overflow-hidden">
             <div className="absolute top-4 left-4 w-3 h-3 border-t border-l border-cyan-500/60" />

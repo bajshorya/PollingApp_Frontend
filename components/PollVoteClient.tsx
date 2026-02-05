@@ -118,7 +118,36 @@ export default function PollVoteClient({
       eventSource.close();
       setConnectionStatus("disconnected");
     });
+    // Add this event listener in the useEffect
+    eventSource.addEventListener("poll_created", (event) => {
+      console.log("🔄 Received poll_created event in PollVoteClient");
+      try {
+        const data = JSON.parse(event.data);
+        if (data.poll_id === pollId) {
+          console.log("✅ Poll created/restarted - reopening");
+          setClosed(false);
+          // Reset vote state when poll is restarted
+          setVoted(false);
+        }
+      } catch (err) {
+        console.error("Error parsing poll_created:", err);
+      }
+    });
 
+    eventSource.addEventListener("poll_closed", (event) => {
+      console.log("🔒 Received poll_closed event in PollVoteClient");
+      try {
+        const data = JSON.parse(event.data);
+        if (data === pollId || data.poll_id === pollId) {
+          console.log("✅ Poll closed - updating status");
+          setClosed(true);
+          eventSource.close();
+          setConnectionStatus("disconnected");
+        }
+      } catch (err) {
+        console.error("Error parsing poll_closed:", err);
+      }
+    });
     eventSource.onerror = (err) => {
       console.error("❌ SSE connection error for poll", pollId, ":", {
         error: err,
@@ -243,16 +272,21 @@ export default function PollVoteClient({
 
       setClosed(false);
       setVoted(false);
+      setOptions(initialOptions);
       setError(null);
       console.log("✅ Poll restarted successfully");
+
+      setError("Poll restarted successfully! You can now vote again.");
+      setTimeout(() => {
+        setError(null);
+      }, 3000);
     } catch (err) {
       console.error("Network error during restart:", err);
       setError("Network error");
     } finally {
       setRestartLoading(false);
     }
-  }, [pollId, creatorId, currentUserId]);
-
+  }, [pollId, creatorId, currentUserId, initialOptions]);
   const totalVotes = options.reduce((s, o) => s + o.votes, 0);
 
   return (
