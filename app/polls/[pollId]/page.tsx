@@ -497,6 +497,8 @@ export default function PollPage() {
                   options={poll.options}
                   closed={poll.closed}
                   userVoted={poll.user_voted}
+                  creatorId={poll.creator_id}
+                  currentUserId={poll.current_user_id}
                 />
               ) : (
                 <div className="text-center py-12">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Users, CheckCircle } from "lucide-react";
+import { Users, CheckCircle, RotateCcw } from "lucide-react";
 
 interface BackendOption {
   id: string;
@@ -21,6 +21,8 @@ interface Props {
   options: FrontendOption[];
   closed: boolean;
   userVoted: boolean;
+  creatorId?: string;
+  currentUserId?: string;
 }
 
 interface SseUpdate {
@@ -34,10 +36,13 @@ export default function PollVoteClient({
   options: initialOptions,
   closed: initialClosed,
   userVoted,
+  creatorId,
+  currentUserId,
 }: Props) {
   const [options, setOptions] = useState<FrontendOption[]>(initialOptions);
   const [voted, setVoted] = useState(userVoted);
   const [loading, setLoading] = useState(false);
+  const [restartLoading, setRestartLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [closed, setClosed] = useState(initialClosed);
   const [connectionStatus, setConnectionStatus] =
@@ -197,6 +202,57 @@ export default function PollVoteClient({
     [pollId, loading, voted, closed],
   );
 
+  const restartPoll = useCallback(async () => {
+    if (!creatorId || !currentUserId || creatorId !== currentUserId) {
+      setError("Only the poll creator can restart the poll");
+      return;
+    }
+
+    setRestartLoading(true);
+    setError(null);
+    console.log("Restarting poll:", pollId);
+
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      setError("Authentication required");
+      setRestartLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/restart`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      console.log("Restart poll response status:", res.status);
+
+      const data = await res.json();
+      console.log("Restart poll response data:", data);
+
+      if (!res.ok) {
+        setError(data.error || "Failed to restart poll");
+        return;
+      }
+
+      setClosed(false);
+      setVoted(false);
+      setError(null);
+      console.log("✅ Poll restarted successfully");
+    } catch (err) {
+      console.error("Network error during restart:", err);
+      setError("Network error");
+    } finally {
+      setRestartLoading(false);
+    }
+  }, [pollId, creatorId, currentUserId]);
+
   const totalVotes = options.reduce((s, o) => s + o.votes, 0);
 
   return (
@@ -300,8 +356,31 @@ export default function PollVoteClient({
           </div>
         )}
         {closed && (
-          <div className="p-4 bg-red-900/30 border border-red-500/40 rounded-lg">
-            <p className="text-red-400 font-mono text-sm">VOTING_TERMINATED</p>
+          <div className="space-y-3">
+            <div className="p-4 bg-red-900/30 border border-red-500/40 rounded-lg">
+              <p className="text-red-400 font-mono text-sm">
+                VOTING_TERMINATED
+              </p>
+            </div>
+            {creatorId && currentUserId && creatorId === currentUserId && (
+              <button
+                onClick={restartPoll}
+                disabled={restartLoading}
+                className="w-full p-4 bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-500/40 hover:border-emerald-500/60 rounded-lg text-emerald-400 font-mono text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {restartLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+                    <span>RESTARTING_POLL...</span>
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-4 h-4" strokeWidth={2} />
+                    <span>RESTART_POLL</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         )}
         {!closed && !voted && !loading && !error && (
