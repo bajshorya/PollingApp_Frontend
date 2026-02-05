@@ -36,6 +36,33 @@ export default function CreateNewPollPage() {
     setLoading(true);
     setError("");
 
+    if (!title.trim()) {
+      setError("Poll title is required");
+      setLoading(false);
+      return;
+    }
+
+    if (title[0] === " ") {
+      setError("Poll title cannot start with a space");
+      setLoading(false);
+      return;
+    }
+
+    const validOptions = options.filter((opt) => opt.trim() !== "");
+    if (validOptions.length < 2) {
+      setError("Please provide at least 2 valid poll options");
+      setLoading(false);
+      return;
+    }
+
+    for (const option of validOptions) {
+      if (option[0] === " ") {
+        setError("Poll options cannot start with a space");
+        setLoading(false);
+        return;
+      }
+    }
+
     const token = localStorage.getItem("auth_token");
     if (!token) {
       setError("You need to be signed in to create a poll");
@@ -97,7 +124,6 @@ export default function CreateNewPollPage() {
 
   return (
     <div className="min-h-screen bg-[#175588] relative overflow-hidden">
-      {/* Tech grid background */}
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-linear-to-b from-[#0a1a2a] via-[#081220] to-[#050a15]" />
         <div
@@ -112,7 +138,6 @@ export default function CreateNewPollPage() {
         />
       </div>
 
-      {/* Binary code decorative */}
       <div className="fixed top-10 left-10 z-0 opacity-10 font-mono text-xs text-cyan-400">
         01110000 01101111 01101100 01101100
       </div>
@@ -133,15 +158,12 @@ export default function CreateNewPollPage() {
             <span>CANCEL_CREATION</span>
           </Link>
 
-          {/* Main form container */}
           <div className="relative bg-gray-900/80 backdrop-blur-sm border border-gray-700 rounded-lg p-8 overflow-hidden">
-            {/* Corner accents */}
             <div className="absolute top-4 left-4 w-3 h-3 border-t border-l border-cyan-500/60" />
             <div className="absolute top-4 right-4 w-3 h-3 border-t border-r border-cyan-500/60" />
             <div className="absolute bottom-4 left-4 w-3 h-3 border-b border-l border-cyan-500/60" />
             <div className="absolute bottom-4 right-4 w-3 h-3 border-b border-r border-cyan-500/60" />
 
-            {/* Header */}
             <div className="flex items-center gap-4 mb-8">
               <div className="w-14 h-14 bg-gray-800 border border-cyan-500/40 rounded-lg flex items-center justify-center">
                 <Plus className="w-7 h-7 text-cyan-400" strokeWidth={2.5} />
@@ -181,7 +203,6 @@ export default function CreateNewPollPage() {
             ) : (
               <form onSubmit={handleSubmit}>
                 <div className="space-y-8">
-                  {/* Title input */}
                   <div>
                     <label className="flex items-center gap-2 text-gray-300 mb-3 font-mono text-sm">
                       <div className="w-2 h-2 bg-cyan-400"></div>
@@ -197,7 +218,6 @@ export default function CreateNewPollPage() {
                     />
                   </div>
 
-                  {/* Description input */}
                   <div>
                     <label className="block text-gray-300 mb-3 font-mono text-sm">
                       DESCRIPTION{" "}
@@ -211,7 +231,6 @@ export default function CreateNewPollPage() {
                     />
                   </div>
 
-                  {/* Options section */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <label className="flex items-center gap-2 text-gray-300 font-mono text-sm">
@@ -263,7 +282,6 @@ export default function CreateNewPollPage() {
                     </p>
                   </div>
 
-                  {/* Error display */}
                   {error &&
                     error !== "You need to be signed in to create a poll" && (
                       <div className="p-4 bg-red-900/30 border border-red-500/40 rounded-lg">
@@ -273,7 +291,6 @@ export default function CreateNewPollPage() {
                       </div>
                     )}
 
-                  {/* Submit button */}
                   <button
                     type="submit"
                     disabled={loading}
