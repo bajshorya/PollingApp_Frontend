@@ -1,20 +1,19 @@
 import Link from "next/link";
+import { Vortex } from "@/components/ui/vortex";
 
 export default function Home() {
   return (
-    <>
-      <div
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: "url('/bgHome.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-        }}
-      />
-      <div className="fixed inset-0 z-10 bg-linear-to-b from-[#175588]/90 via-[#0d2a44]/95 to-[#081525]" />
+    <Vortex
+      backgroundColor="black"
+      baseHue={200}
+      particleCount={5000}
+      rangeY={300}
+      className="min-h-screen flex items-center justify-center p-5"
+      containerClassName="fixed inset-0 z-0"
+    >
+      <div className="fixed inset-0 z-10 bg-linear-to-b from-[#175588]/20 via-[#0d2a44]/20 to-[#7d3c69]" />
 
-      <div className="fixed inset-0 z-20 opacity-30">
+      <div className="fixed inset-0 z-20 opacity-10">
         <div
           className="absolute inset-0"
           style={{
@@ -39,8 +38,9 @@ export default function Home() {
         />
       </div>
 
-      <div className="relative z-30 min-h-screen flex items-center justify-center p-5">
-        <div className="text-center max-w-4xl">
+      {/* Main content container */}
+      <div className="relative z-30 w-full">
+        <div className="text-center max-w-4xl mx-auto">
           <div className="relative mb-8">
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter">
               <span className="relative inline-block">
@@ -119,6 +119,6 @@ export default function Home() {
       <div className="fixed bottom-10 right-10 z-20 opacity-10">
         <div className="w-32 h-px bg-linear-to-l from-cyan-500 to-transparent" />
       </div>
-    </>
+    </Vortex>
   );
 }
