@@ -21,155 +21,235 @@ export async function signupWithPasskey(username: string) {
   if (!API_BASE) {
     throw new Error("API URL not configured");
   }
-  const startRes = await fetch(`${API_BASE}/register_start/${username}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
 
-  if (!startRes.ok) throw new Error("Failed to start registration");
-
-  const startData = await startRes.json();
-
-  const options = startData.public_key || startData;
-  const registration_state = startData.registration_state;
-  const user_id = startData.user_id;
-
-  options.publicKey.challenge = base64UrlToUint8Array(
-    options.publicKey.challenge,
-  );
-  options.publicKey.user.id = base64UrlToUint8Array(options.publicKey.user.id);
-
-  const credential = await navigator.credentials.create({
-    publicKey: options.publicKey,
-  });
-
-  if (!credential) throw new Error("Passkey creation cancelled");
-
-  const cred = credential as PublicKeyCredential;
-  const attestation = cred.response as AuthenticatorAttestationResponse;
-
-  const payload = {
-    credential: {
-      id: cred.id,
-      rawId: uint8ArrayToBase64Url(new Uint8Array(cred.rawId)),
-      type: cred.type,
-      response: {
-        attestationObject: uint8ArrayToBase64Url(
-          new Uint8Array(attestation.attestationObject),
-        ),
-        clientDataJSON: uint8ArrayToBase64Url(
-          new Uint8Array(attestation.clientDataJSON),
-        ),
+  try {
+    const startRes = await fetch(`${API_BASE}/register_start/${username}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    },
-    registration_state,
-    user_id,
-    username,
-  };
+    });
 
-  const finishRes = await fetch(`${API_BASE}/register_finish`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+    if (!startRes.ok) {
+      const errorData = await startRes.json().catch(() => ({}));
 
-  if (!finishRes.ok) {
-    const errorData = await finishRes.json();
-    throw new Error(errorData.message || "Registration failed");
+      if (startRes.status === 400) {
+        if (
+          errorData.message?.toLowerCase().includes("already exists") ||
+          errorData.message?.toLowerCase().includes("already registered")
+        ) {
+          throw new Error(
+            "Username already exists. Please choose a different username.",
+          );
+        }
+      }
+
+      if (startRes.status === 404) {
+        throw new Error("User not found during registration start");
+      }
+
+      throw new Error(errorData.message || "Failed to start registration");
+    }
+
+    const startData = await startRes.json();
+
+    const options = startData.public_key || startData;
+    const registration_state = startData.registration_state;
+    const user_id = startData.user_id;
+
+    options.publicKey.challenge = base64UrlToUint8Array(
+      options.publicKey.challenge,
+    );
+    options.publicKey.user.id = base64UrlToUint8Array(
+      options.publicKey.user.id,
+    );
+
+    const credential = await navigator.credentials.create({
+      publicKey: options.publicKey,
+    });
+
+    if (!credential) throw new Error("Passkey creation cancelled");
+
+    const cred = credential as PublicKeyCredential;
+    const attestation = cred.response as AuthenticatorAttestationResponse;
+
+    const payload = {
+      credential: {
+        id: cred.id,
+        rawId: uint8ArrayToBase64Url(new Uint8Array(cred.rawId)),
+        type: cred.type,
+        response: {
+          attestationObject: uint8ArrayToBase64Url(
+            new Uint8Array(attestation.attestationObject),
+          ),
+          clientDataJSON: uint8ArrayToBase64Url(
+            new Uint8Array(attestation.clientDataJSON),
+          ),
+        },
+      },
+      registration_state,
+      user_id,
+      username,
+    };
+
+    const finishRes = await fetch(`${API_BASE}/register_finish`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!finishRes.ok) {
+      const errorData = await finishRes.json().catch(() => ({}));
+
+      if (finishRes.status === 400) {
+        if (
+          errorData.message?.toLowerCase().includes("already exists") ||
+          errorData.message?.toLowerCase().includes("duplicate")
+        ) {
+          throw new Error(
+            "Username already exists. Please choose a different username.",
+          );
+        }
+      }
+
+      throw new Error(errorData.message || "Registration failed");
+    }
+
+    const finishData = await finishRes.json();
+
+    if (finishData.access_token) {
+      localStorage.setItem("auth_token", finishData.access_token);
+    }
+
+    return finishData;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Registration failed. Please try again.");
   }
-
-  const finishData = await finishRes.json();
-
-  if (finishData.access_token) {
-    localStorage.setItem("auth_token", finishData.access_token);
-  }
-
-  return finishData;
 }
 
 export async function signinWithPasskey(username: string) {
-  const startRes = await fetch(`${API_BASE}/login_start/${username}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!startRes.ok) throw new Error("Failed to start authentication");
-
-  const startData = await startRes.json();
-
-  const options = startData.public_key || startData;
-  const authentication_state = startData.authentication_state;
-  const user_id = startData.user_id;
-
-  options.publicKey.challenge = base64UrlToUint8Array(
-    options.publicKey.challenge,
-  );
-
-  if (options.publicKey.allowCredentials) {
-    options.publicKey.allowCredentials = options.publicKey.allowCredentials.map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (cred: any) => ({
-        ...cred,
-        id: base64UrlToUint8Array(cred.id),
-      }),
-    );
-  }
-
-  const assertion = await navigator.credentials.get({
-    publicKey: options.publicKey,
-  });
-
-  if (!assertion) throw new Error("Authentication cancelled");
-
-  const cred = assertion as PublicKeyCredential;
-  const auth = cred.response as AuthenticatorAssertionResponse;
-
-  const payload = {
-    credential: {
-      id: cred.id,
-      rawId: uint8ArrayToBase64Url(new Uint8Array(cred.rawId)),
-      type: cred.type,
-      response: {
-        authenticatorData: uint8ArrayToBase64Url(
-          new Uint8Array(auth.authenticatorData),
-        ),
-        clientDataJSON: uint8ArrayToBase64Url(
-          new Uint8Array(auth.clientDataJSON),
-        ),
-        signature: uint8ArrayToBase64Url(new Uint8Array(auth.signature)),
+  try {
+    const startRes = await fetch(`${API_BASE}/login_start/${username}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    },
-    authentication_state,
-    user_id,
-    username,
-  };
+    });
 
-  const finishRes = await fetch(`${API_BASE}/login_finish`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+    if (!startRes.ok) {
+      const errorData = await startRes.json().catch(() => ({}));
 
-  if (!finishRes.ok) {
-    const errorData = await finishRes.json();
-    throw new Error(errorData.message || "Authentication failed");
+      if (startRes.status === 404) {
+        throw new Error("User does not exist. Please check your username.");
+      }
+
+      if (startRes.status === 400) {
+        throw new Error(errorData.message || "Invalid username format.");
+      }
+
+      throw new Error(errorData.message || "Failed to start authentication");
+    }
+
+    const startData = await startRes.json();
+
+    const options = startData.public_key || startData;
+    const authentication_state = startData.authentication_state;
+    const user_id = startData.user_id;
+
+    options.publicKey.challenge = base64UrlToUint8Array(
+      options.publicKey.challenge,
+    );
+
+    if (options.publicKey.allowCredentials) {
+      options.publicKey.allowCredentials =
+        options.publicKey.allowCredentials.map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (cred: any) => ({
+            ...cred,
+            id: base64UrlToUint8Array(cred.id),
+          }),
+        );
+    }
+
+    const assertion = await navigator.credentials.get({
+      publicKey: options.publicKey,
+    });
+
+    if (!assertion) throw new Error("Authentication cancelled");
+
+    const cred = assertion as PublicKeyCredential;
+    const auth = cred.response as AuthenticatorAssertionResponse;
+
+    const payload = {
+      credential: {
+        id: cred.id,
+        rawId: uint8ArrayToBase64Url(new Uint8Array(cred.rawId)),
+        type: cred.type,
+        response: {
+          authenticatorData: uint8ArrayToBase64Url(
+            new Uint8Array(auth.authenticatorData),
+          ),
+          clientDataJSON: uint8ArrayToBase64Url(
+            new Uint8Array(auth.clientDataJSON),
+          ),
+          signature: uint8ArrayToBase64Url(new Uint8Array(auth.signature)),
+        },
+      },
+      authentication_state,
+      user_id,
+      username,
+    };
+
+    const finishRes = await fetch(`${API_BASE}/login_finish`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!finishRes.ok) {
+      const errorData = await finishRes.json().catch(() => ({}));
+
+      if (finishRes.status === 401) {
+        if (
+          errorData.message?.toLowerCase().includes("passkey") ||
+          errorData.message?.toLowerCase().includes("credential")
+        ) {
+          throw new Error(
+            "Passkey invalid or not registered. Please register a passkey first.",
+          );
+        }
+        throw new Error(
+          "Authentication failed. Please check your passkey and try again.",
+        );
+      }
+
+      if (finishRes.status === 404) {
+        throw new Error("User or passkey not found.");
+      }
+
+      throw new Error(errorData.message || "Authentication failed");
+    }
+
+    const finishData = await finishRes.json();
+
+    if (finishData.access_token) {
+      localStorage.setItem("auth_token", finishData.access_token);
+    }
+
+    return finishData;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Authentication failed. Please try again.");
   }
-
-  const finishData = await finishRes.json();
-
-  if (finishData.access_token) {
-    localStorage.setItem("auth_token", finishData.access_token);
-  }
-
-  return finishData;
 }
 
 export const fetchPolls = async () => {

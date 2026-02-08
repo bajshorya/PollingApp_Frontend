@@ -45,22 +45,51 @@ export default function SigninPage() {
         return;
       }
 
-      if (res.error && res.error.toLowerCase().includes("not found")) {
-        setStatus("Username does not exist. Please check and try again.");
-        return;
-      }
+      if (res.error) {
+        const errorLower = res.error.toLowerCase();
 
-      if (res.error && res.error.toLowerCase().includes("authentication")) {
-        setStatus("Authentication failed. Please try again.");
-        return;
-      }
+        if (
+          errorLower.includes("not found") ||
+          errorLower.includes("user not found")
+        ) {
+          setStatus(
+            "❌ User does not exist. Please check your username and try again.",
+          );
+          return;
+        }
 
-      if (
-        res.error &&
-        (res.error.toLowerCase().includes("passkey") ||
-          res.error.toLowerCase().includes("biometric"))
-      ) {
-        setStatus("Passkey authentication failed. Please try again.");
+        if (
+          errorLower.includes("passkey invalid") ||
+          errorLower.includes("invalid passkey")
+        ) {
+          setStatus(
+            "❌ Passkey authentication failed. Your passkey is invalid or expired.",
+          );
+          return;
+        }
+
+        if (
+          errorLower.includes("biometric") ||
+          errorLower.includes("fingerprint") ||
+          errorLower.includes("face id")
+        ) {
+          setStatus("❌ Biometric authentication failed. Please try again.");
+          return;
+        }
+
+        if (errorLower.includes("authentication failed")) {
+          setStatus(
+            "❌ Authentication failed. Please verify your credentials and try again.",
+          );
+          return;
+        }
+
+        if (errorLower.includes("unauthorized")) {
+          setStatus("❌ Unauthorized. Access denied.");
+          return;
+        }
+
+        setStatus(`❌ ${res.error}`);
         return;
       }
 
@@ -75,24 +104,29 @@ export default function SigninPage() {
           router.push("/polls");
         }, 1000);
       } else {
-        setStatus("Unexpected response. Please try again.");
+        setStatus("❌ Unexpected response from server. Please try again.");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      if (
-        e.message.toLowerCase().includes("network") ||
-        e.message.toLowerCase().includes("fetch")
-      ) {
-        setStatus("Network error. Please check your connection and try again.");
-      }
-      else if (e.message.toLowerCase().includes("timeout")) {
-        setStatus("Request timed out. Please try again.");
-      }
-      else if (e.message.toLowerCase().includes("not found")) {
-        setStatus("Username does not exist. Please check and try again.");
-      }
-      else {
-        setStatus(e.message || "Authentication failed. Please try again.");
+      const errorMessage = e.message || "Unknown error";
+      const errorLower = errorMessage.toLowerCase();
+
+      if (errorLower.includes("network") || errorLower.includes("fetch")) {
+        setStatus(
+          "❌ Network error. Please check your connection and try again.",
+        );
+      } else if (errorLower.includes("timeout")) {
+        setStatus("❌ Request timed out. Please try again.");
+      } else if (errorLower.includes("not found")) {
+        setStatus(
+          "❌ User does not exist. Please check your username and try again.",
+        );
+      } else if (errorLower.includes("passkey")) {
+        setStatus("❌ Passkey authentication failed. Please try again.");
+      } else if (errorLower.includes("user not authenticated")) {
+        setStatus("❌ Authentication failed. Please try again.");
+      } else {
+        setStatus(`❌ ${errorMessage}`);
       }
     } finally {
       setLoading(false);
