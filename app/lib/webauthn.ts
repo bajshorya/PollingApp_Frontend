@@ -16,7 +16,6 @@ function uint8ArrayToBase64Url(bytes: Uint8Array) {
     .replace(/=/g, "");
 }
 
-// WebAuthn registration
 export async function signupWithPasskey(username: string) {
   if (!API_BASE) {
     throw new Error("API URL not configured");
@@ -126,6 +125,15 @@ export async function signupWithPasskey(username: string) {
     return finishData;
   } catch (error) {
     if (error instanceof Error) {
+      const errorMessage = error.message;
+      if (
+        errorMessage.includes("The operation either timed out") ||
+        errorMessage.includes("https://www.w3.org/TR/webauthn")
+      ) {
+        throw new Error(
+          "Passkey creation timed out or was cancelled. Please try again.",
+        );
+      }
       throw error;
     }
     throw new Error("Registration failed. Please try again.");
@@ -246,6 +254,15 @@ export async function signinWithPasskey(username: string) {
     return finishData;
   } catch (error) {
     if (error instanceof Error) {
+      const errorMessage = error.message;
+      if (
+        errorMessage.includes("The operation either timed out") ||
+        errorMessage.includes("https://www.w3.org/TR/webauthn")
+      ) {
+        throw new Error(
+          "Passkey authentication timed out or was cancelled. Please try again.",
+        );
+      }
       throw error;
     }
     throw new Error("Authentication failed. Please try again.");
