@@ -63,6 +63,17 @@ export async function signupWithPasskey(username: string) {
       options.publicKey.user.id,
     );
 
+    if (options.publicKey.excludeCredentials) {
+      options.publicKey.excludeCredentials =
+        options.publicKey.excludeCredentials.map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (cred: any) => ({
+            ...cred,
+            id: base64UrlToUint8Array(cred.id),
+          }),
+        );
+    }
+
     const credential = await navigator.credentials.create({
       publicKey: options.publicKey,
     });
