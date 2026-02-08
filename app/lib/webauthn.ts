@@ -56,6 +56,16 @@ export async function signupWithPasskey(username: string) {
     const registration_state = startData.registration_state;
     const user_id = startData.user_id;
 
+    // If excludeCredentials is populated and non-empty, user already exists
+    if (
+      options.publicKey.excludeCredentials &&
+      options.publicKey.excludeCredentials.length > 0
+    ) {
+      throw new Error(
+        "Username already exists. Please choose a different username.",
+      );
+    }
+
     options.publicKey.challenge = base64UrlToUint8Array(
       options.publicKey.challenge,
     );
