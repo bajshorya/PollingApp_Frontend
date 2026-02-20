@@ -59,8 +59,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
   };
 
   useEffect(() => {
-    console.log("🔗 Attempting to connect to SSE...");
-
     let reconnectAttempts = 0;
     const maxReconnectAttempts = 5;
     let reconnectTimer: NodeJS.Timeout;
@@ -70,10 +68,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
         console.error("❌ Max reconnection attempts reached");
         return;
       }
-
-      console.log(
-        `🔗 SSE connection attempt ${reconnectAttempts + 1}/${maxReconnectAttempts}`,
-      );
 
       const token = localStorage.getItem("auth_token");
       if (!token) {
@@ -86,33 +80,22 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
       );
 
       eventSource.onopen = () => {
-        console.log("✅ SSE connection opened successfully");
         setIsConnected(true);
         reconnectAttempts = 0;
       };
 
       eventSource.onmessage = (event) => {
-        console.log("📨 Raw SSE message:", event.data);
-
         try {
           const data = JSON.parse(event.data);
-          console.log("📦 Parsed message data:", data);
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {}
       };
 
       eventSource.addEventListener("init", (event) => {
-        console.log("📦 Received init event");
         try {
           const data = JSON.parse(event.data);
-          console.log(
-            "Parsed init data, polls count:",
-            data.polls?.length || 0,
-          );
 
           if (data.polls && Array.isArray(data.polls)) {
-            console.log(`Setting ${data.polls.length} polls from SSE`);
-
             const updatedPolls = data.polls.map((poll: any) => ({
               id: poll.id,
               title: poll.title,
@@ -143,10 +126,8 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
       });
 
       eventSource.addEventListener("poll_created", (event) => {
-        console.log("🎉 Received poll_created event");
         try {
           const data = JSON.parse(event.data);
-          console.log("New poll data:", data);
 
           if (data.poll) {
             const newPoll = {
@@ -181,10 +162,8 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
       });
 
       eventSource.addEventListener("poll_updated", (event) => {
-        console.log("🔄 Received poll_updated event");
         try {
           const data = JSON.parse(event.data);
-          console.log("Updated poll data:", data);
 
           if (data.poll) {
             const updatedPoll = {
@@ -218,7 +197,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
       });
 
       eventSource.addEventListener("poll_closed", (event) => {
-        console.log("🔒 Received poll_closed event");
         try {
           const data = JSON.parse(event.data);
           setPolls((prev) =>
@@ -232,10 +210,8 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
       });
 
       eventSource.addEventListener("poll_restarted", (event) => {
-        console.log("🔄 Received poll_restarted event");
         try {
           const data = JSON.parse(event.data);
-          console.log("Restarted poll data:", data);
 
           setPolls((prev) =>
             prev.map((poll) =>
@@ -263,9 +239,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
 
         if (reconnectAttempts < maxReconnectAttempts) {
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-          console.log(
-            `🔄 Will attempt to reconnect in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`,
-          );
 
           reconnectTimer = setTimeout(() => {
             connectSSE();
@@ -276,7 +249,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
       };
 
       return () => {
-        console.log("🔌 Cleaning up SSE connection");
         if (reconnectTimer) clearTimeout(reconnectTimer);
         eventSource.close();
         setIsConnected(false);
@@ -286,7 +258,6 @@ const LivePollGrid = ({ initialPolls }: { initialPolls: Poll[] }) => {
     connectSSE();
 
     return () => {
-      console.log("🔌 Component unmounting, cleaning up SSE");
       if (reconnectTimer) clearTimeout(reconnectTimer);
     };
   }, []);

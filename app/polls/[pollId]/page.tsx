@@ -49,7 +49,6 @@ export default function PollPage() {
         }
       }
     }
-
     return id as string;
   };
 
@@ -89,23 +88,15 @@ export default function PollPage() {
       setLoading(true);
 
       if (!isAuthenticated()) {
-        console.log("🔐 Not authenticated, redirecting to signin");
         router.push("/auth/signin");
         return;
       }
 
       const token = getAuthToken();
       if (!token) {
-        console.log("🔐 No token found, redirecting to signin");
         router.push("/auth/signin");
         return;
       }
-
-      console.log("📡 Fetching poll with ID:", pollId);
-      console.log(
-        "📡 API URL:",
-        `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}`,
-      );
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}`,
@@ -118,10 +109,7 @@ export default function PollPage() {
         },
       );
 
-      console.log("📡 Response status:", response.status);
-
       if (response.status === 401) {
-        console.log("🔐 Unauthorized, removing token");
         localStorage.removeItem("auth_token");
         router.push("/auth/signin");
         return;
@@ -138,7 +126,6 @@ export default function PollPage() {
       }
 
       const data = await response.json();
-      console.log("✅ Poll data received:", data);
       setPoll(data);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -200,18 +187,14 @@ export default function PollPage() {
     const token = localStorage.getItem("auth_token");
     if (!token || !pollId) return;
 
-    console.log("🔗 Setting up SSE listener for poll events");
-
     const eventSource = new EventSource(
       `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/sse?token=${encodeURIComponent(token)}`,
     );
 
     eventSource.addEventListener("poll_created", (event) => {
-      console.log("🔄 Received poll_created event (could be restart)");
       try {
         const data = JSON.parse(event.data);
         if (data.poll_id === pollId && poll) {
-          console.log("✅ Poll created/restarted - updating status");
           setPoll({ ...poll, closed: false });
 
           fetchPoll();
@@ -222,11 +205,9 @@ export default function PollPage() {
     });
 
     eventSource.addEventListener("poll_closed", (event) => {
-      console.log("🔒 Received poll_closed event");
       try {
         const data = JSON.parse(event.data);
         if (data === pollId || data.poll_id === pollId) {
-          console.log("✅ Poll closed - updating status");
           if (poll) {
             setPoll({ ...poll, closed: true });
           }
@@ -237,7 +218,6 @@ export default function PollPage() {
     });
 
     return () => {
-      console.log("🔌 Cleaning up SSE listener for poll");
       eventSource.close();
     };
   }, [pollId, poll]);
@@ -268,8 +248,6 @@ export default function PollPage() {
         throw new Error("Authentication required");
       }
 
-      console.log("🔒 Closing poll:", pollId);
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/close`,
         {
@@ -281,15 +259,10 @@ export default function PollPage() {
         },
       );
 
-      console.log("🔒 Close poll response status:", response.status);
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to close poll");
       }
-
-      const data = await response.json();
-      console.log("✅ Poll closed successfully:", data);
 
       setCloseSuccess(true);
 

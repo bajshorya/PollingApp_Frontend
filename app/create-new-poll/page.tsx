@@ -71,12 +71,7 @@ export default function CreateNewPollPage() {
     }
 
     try {
-      console.log("Creating poll with data:", {
-        title,
-        description: description || null,
-        options: options.filter((opt) => opt.trim() !== ""),
-      });
-
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/polls`, {
         method: "POST",
         headers: {
@@ -90,7 +85,6 @@ export default function CreateNewPollPage() {
         }),
       });
 
-      console.log("Create poll response status:", response.status);
 
       if (response.status === 401) {
         setError("You need to be signed in to create a poll");
@@ -106,7 +100,6 @@ export default function CreateNewPollPage() {
       }
 
       const data = await response.json();
-      console.log("Create poll success data:", data);
 
       if (!data.poll_id) {
         throw new Error("No poll ID returned from server");

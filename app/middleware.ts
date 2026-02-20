@@ -6,7 +6,6 @@ export function middleware(request: NextRequest) {
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path),
   );
-
   if (isProtected) {
     const authCookie = request.cookies.get("auth_token");
 

@@ -60,11 +60,9 @@ export default function PollVoteClient({
 
   useEffect(() => {
     if (closed) {
-      console.log("SSE not starting because poll is closed");
       return;
     }
 
-    console.log("Starting SSE connection for poll:", pollId);
     setConnectionStatus("connecting");
 
     const token = localStorage.getItem("auth_token");
@@ -75,23 +73,19 @@ export default function PollVoteClient({
     }
 
     const sseUrl = `${process.env.NEXT_PUBLIC_API_URL}/polls/${pollId}/sse?token=${encodeURIComponent(token)}`;
-    console.log("Connecting to SSE URL:", sseUrl);
 
     const eventSource = new EventSource(sseUrl);
     eventSource.onopen = () => {
-      console.log("✅ SSE connection opened for poll:", pollId);
       setConnectionStatus("connected");
     };
 
     eventSource.addEventListener("init", (event) => {
-      console.log("📦 Received init event for poll:", pollId);
       try {
         const data = JSON.parse(event.data);
         if (data.poll && data.poll.closed) {
           setClosed(true);
         }
         if (data.options) {
-          console.log("Setting initial options:", data.options);
           const transformedOptions = transformOptions(data.options);
           setOptions(transformedOptions);
         }
@@ -101,10 +95,8 @@ export default function PollVoteClient({
     });
 
     eventSource.addEventListener("vote_update", (event) => {
-      console.log("🔄 Received vote_update event for poll:", pollId);
       try {
         const data: SseUpdate = JSON.parse(event.data);
-        console.log("Updated options received:", data.options);
         const transformedOptions = transformOptions(data.options);
         setOptions(transformedOptions);
       } catch (err) {
@@ -113,18 +105,15 @@ export default function PollVoteClient({
     });
 
     eventSource.addEventListener("poll_closed", () => {
-      console.log("🔒 Received poll_closed event for poll:", pollId);
       setClosed(true);
       eventSource.close();
       setConnectionStatus("disconnected");
     });
     // Add this event listener in the useEffect
     eventSource.addEventListener("poll_created", (event) => {
-      console.log("🔄 Received poll_created event in PollVoteClient");
       try {
         const data = JSON.parse(event.data);
         if (data.poll_id === pollId) {
-          console.log("✅ Poll created/restarted - reopening");
           setClosed(false);
           // Reset vote state when poll is restarted
           setVoted(false);
@@ -135,11 +124,9 @@ export default function PollVoteClient({
     });
 
     eventSource.addEventListener("poll_closed", (event) => {
-      console.log("🔒 Received poll_closed event in PollVoteClient");
       try {
         const data = JSON.parse(event.data);
         if (data === pollId || data.poll_id === pollId) {
-          console.log("✅ Poll closed - updating status");
           setClosed(true);
           eventSource.close();
           setConnectionStatus("disconnected");
@@ -156,10 +143,8 @@ export default function PollVoteClient({
       });
 
       if (eventSource.readyState === EventSource.CLOSED) {
-        console.log("SSE connection was closed");
         setConnectionStatus("disconnected");
       } else if (eventSource.readyState === EventSource.CONNECTING) {
-        console.log("SSE is connecting/reconnecting...");
         setConnectionStatus("connecting");
       }
     };
@@ -169,7 +154,6 @@ export default function PollVoteClient({
     };
 
     return () => {
-      console.log("🔌 Cleaning up SSE connection for poll:", pollId);
       eventSource.close();
       setConnectionStatus("disconnected");
     };
@@ -181,7 +165,6 @@ export default function PollVoteClient({
 
       setLoading(true);
       setError(null);
-      console.log("Casting vote for option:", optionId);
 
       const token = localStorage.getItem("auth_token");
       if (!token) {
@@ -203,10 +186,8 @@ export default function PollVoteClient({
           },
         );
 
-        console.log("Vote response status:", res.status);
 
         const data = await res.json();
-        console.log("Vote response data:", data);
 
         if (!res.ok) {
           setError(data.error || "Voting failed");
@@ -214,7 +195,6 @@ export default function PollVoteClient({
         }
 
         setVoted(true);
-        console.log("✅ Vote recorded successfully");
 
         setOptions((prevOptions) =>
           prevOptions.map((opt) =>
@@ -239,7 +219,6 @@ export default function PollVoteClient({
 
     setRestartLoading(true);
     setError(null);
-    console.log("Restarting poll:", pollId);
 
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -260,10 +239,8 @@ export default function PollVoteClient({
         },
       );
 
-      console.log("Restart poll response status:", res.status);
 
       const data = await res.json();
-      console.log("Restart poll response data:", data);
 
       if (!res.ok) {
         setError(data.error || "Failed to restart poll");
@@ -274,7 +251,6 @@ export default function PollVoteClient({
       setVoted(false);
       setOptions(initialOptions);
       setError(null);
-      console.log("✅ Poll restarted successfully");
 
       setError("Poll restarted successfully! You can now vote again.");
       setTimeout(() => {
